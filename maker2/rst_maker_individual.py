@@ -1,12 +1,14 @@
-Tabs con plots
-==============
+from pathlib import Path
 
-.. toctree::
-    :maxdepth: 2
-    :caption: Contents:
+def individual_rst(path:Path,path_data)->None:
+    file_path = path / 'index.rst'  
 
-    data/Bacteria/index
+    rst_file = f"""
+{path.name}
+============== 
+"""
 
+    rst_file += """
 .. raw:: html
 
     <style>
@@ -36,46 +38,49 @@ Tabs con plots
       border-top: none;
     }
     </style>
-
+    """
+    rst_file += """
     <!-- Top Level Tabs -->
     <div class="tab">
-      <button class="tablinks" onclick="openTopTab(event, 'TabI')" id="defaultTopOpen">Tab A (With Plots)</button>
-      <button class="tablinks" onclick="openTopTab(event, 'TabII')">Tab B (Other Content)</button>
-      <button class="tablinks" onclick="openTopTab(event, 'TabIII')">Tab B (Other Content)</button>
-      <button class="tablinks" onclick="openTopTab(event, 'TabIV')">Tab B (Other Content)</button>
+      <button class="tablinks" onclick="openTopTab(event, 'TabI')" id="defaultTopOpen">Structural</button>
+      <button class="tablinks" onclick="openTopTab(event, 'TabII')">Kmer</button>
+      <button class="tablinks" onclick="openTopTab(event, 'TabIII')">Spatial</button>
+      <button class="tablinks" onclick="openTopTab(event, 'TabIV')">Compositional</button>
     </div>
-
-    <!-- Content for Tab A -->
+    """
+    rst_file += """
+    <!-- Content for Structural -->
     <div id="TabI" class="tabcontent">
 
-      <!-- Second Level Tabs inside TabA -->
+      <!-- Second Level Tabs -->
       <div class="tab">
-        <button class="tablinks2" onclick="openSecondTab(event, 'Plot1')" id="defaultSecondOpen">Ratio plot</button> 
-        <button class="tablinks2" onclick="openSecondTab(event, 'Plot2')">Heatmap</button>
+        <button class="tablinks2" onclick="openSecondTab(event, 'Plot1')" id="defaultSecondOpen">Ratio plot</button>  
       </div>
-
       <div id="Plot1" class="tabcontent" style="height:600px;">
         <div id="plotly-div1" style="width:100%; height:100%;"></div>
-      </div>
-      <div id="Plot2" class="tabcontent" style="height:600px;">
-        <div id="plotly-div2" style="width:100%; height:100%;"></div>
       </div> 
 
     </div>
-
-    <!-- Content for Tab B -->
+    """
+    rst_file += """
+    <!-- Content for Kmer -->
     <div id="TabII" class="tabcontent">
-      <p>Here is some other content for Tab B. You can add more stuff here.</p>
+      <p>Here is some other content for Kmer. You can add more stuff here.</p>
     </div>
-    <!-- Content for Tab B -->
+    """
+    rst_file += """
+    <!-- Content for Spatial -->
     <div id="TabIII" class="tabcontent">
-      <p>Here is some other content for Tab B. You can add more stuff here.</p>
+      <p>Here is some other content for Spatial. You can add more stuff here.</p>
     </div>
-    <!-- Content for Tab B -->
+    """
+    rst_file += """
+    <!-- Content for Compositional-->
     <div id="TabIV" class="tabcontent">
-      <p>Here is some other content for Tab B. You can add more stuff here.</p>
-    </div>
-
+      <p>Here is some other content for Compositional. You can add more stuff here.</p>
+    </div> 
+    """
+    rst_file += """
     <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
 
     <script>
@@ -115,14 +120,7 @@ Tabs con plots
                 Plotly.Plots.resize(plotDiv);
             }, 100);
         }
-    }
-
-    // Initialize both levels
-    document.getElementById("defaultTopOpen").click();
-    setTimeout(() => {
-        document.getElementById("defaultSecondOpen").click();
-    }, 100);
-
+    } 
     // Plot 1 
     var trace2 = {
         x: [1, 2, 3, 4, 5],
@@ -134,42 +132,9 @@ Tabs con plots
     };
 
     Plotly.newPlot('plotly-div1', [trace2]);
-
-    // Click event Plot 2
-    var plot2Div = document.getElementById('plotly-div1');
-    plot2Div.on('plotly_click', function(data) {
-        var pointIndex = data.points[0].pointIndex;
-        var label = trace2.text[pointIndex];
-
-        // Build relative path to target file
-        var relativePath = 'data/' + label + '/index.html';
-
-        // Get current folder path
-        var basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) + '/';
-
-        // Final URL
-        var url = 'file://' + basePath + relativePath;
-
-        console.log('Opening:', url);
-        window.open(url, '_blank');
-    });
-
-    // Inline Heatmap (Plot 2)
-    var xLabels = ['A', 'B', 'C', 'D'];
-    var yLabels = ['Row 1', 'Row 2', 'Row 3'];
-    var zValues = [
-        [1, 20, 30, 50],
-        [20, 1, 60, 80],
-        [30, 60, 1, 90]
-    ];
-
-    var heatmap = {
-        x: xLabels,
-        y: yLabels,
-        z: zValues,
-        type: 'heatmap',
-        colorscale: 'Viridis'
-    };
-
-    Plotly.newPlot('plotly-div2', [heatmap]);
-    </script>
+    <script>
+    """
+ 
+    # Write text to the file 
+    file_path.write_text(rst_file, encoding='utf-8')
+    print(file_path)
