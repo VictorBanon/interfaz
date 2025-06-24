@@ -2,8 +2,7 @@ Tabs con plots
 ==============
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Contents:
+    :maxdepth: 2 
 
     data/Bacteria/index
 

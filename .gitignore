@@ -1,3 +1,4 @@
 build/
 venv/
+source/_static/
 source/data

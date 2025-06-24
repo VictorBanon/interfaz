@@ -57,7 +57,13 @@ def individual_rst(path:Path,path_data)->None:
         <button class="tablinks2" onclick="openSecondTab(event, 'Plot1')" id="defaultSecondOpen">Ratio plot</button>  
       </div>
       <div id="Plot1" class="tabcontent" style="height:600px;">
-        <div id="plotly-div1" style="width:100%; height:100%;"></div>
+        <div id="plotly-div1" style="width:100%; height:100%;">
+"""
+    rst_file += f"        <iframe src='/html/_static/{path_data.name}' width='100%' height='600px' frameborder='0'></iframe>\n"
+    rst_file += f"        <iframe src='/html/_static/{path_data.name}' width='100%' height='600px' frameborder='0'></iframe>\n"
+    rst_file += f"        <iframe src='/html/_static/{path_data.name}' width='100%' height='600px' frameborder='0'></iframe>\n"
+    rst_file += """
+        </div>
       </div> 
 
     </div>
@@ -121,18 +127,13 @@ def individual_rst(path:Path,path_data)->None:
             }, 100);
         }
     } 
-    // Plot 1 
-    var trace2 = {
-        x: [1, 2, 3, 4, 5],
-        y: [2, 5, 3, 4, 7],
-        mode: 'lines+markers',
-        type: 'scatter',
-        text: ['Actinobacteria', 'Firmicutes', 'Proteobacteria'],
-        hoverinfo: 'text'
-    };
-
-    Plotly.newPlot('plotly-div1', [trace2]);
-    <script>
+    // Initialize both levels
+    document.getElementById("defaultTopOpen").click();
+    setTimeout(() => {
+        document.getElementById("defaultSecondOpen").click();
+    }, 100);
+ 
+    </script>
     """
  
     # Write text to the file 

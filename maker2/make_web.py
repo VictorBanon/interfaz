@@ -13,7 +13,7 @@ from pathlib import Path
 
 from rst_maker_individual import individual_rst
 from rst_maker_taxon import taxon_rst 
-
+import shutil
 
 def tree_folder(df,taxon_list,path,taxon,path_data): 
 
@@ -38,16 +38,20 @@ def tree_folder(df,taxon_list,path,taxon,path_data):
         # Write text to the file
         taxon_rst(file_path,link_list,taxon)
 
-    else:   
-        path_data_files = path_data/path.name/"analysis"/f"chromosome_{path.name}_hc_all.html"
+    else:    
+        folder = "GC" + path.name.split("GC", 1)[-1]
+        path_data_files = path_data/folder/"analysis"/f"{path.name}_hc_all.html"
+        shutil.copy2(path_data_files, Path("./source/_static")/f"{path.name}_hc_all.html")  # Copy the file to the source/data folder
+
         individual_rst(path,path_data_files) 
 
 def main():
 
-    path_file = Path("/home/banongav/Documents/GitHub/2024-victor-IRs-Victor/results/12-rep")
+    path_file = Path("/home/vic/2024-victor-IRs-Victor/results/Snakemake/")
 
-    taxonomy = pd.read_csv(path_file/"taxonomy.csv") 
-    taxon_list = ["superkingdom","phylum","class","order","family","genus","species","ID"]
+    taxonomy = pd.read_csv(path_file/"taxonomy.csv").fillna("Not assigned") 
+    print(taxonomy.info()) 
+    taxon_list = ["superkingdom","phylum","class","order","family","genus","species","ID","ID-replicon"]
 
     tree_folder(taxonomy,taxon_list,Path("./source/data"),"Data",path_file)
 
