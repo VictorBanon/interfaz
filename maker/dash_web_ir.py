@@ -6,9 +6,9 @@ import numpy as np
 import plotly.express as px
 
 # Load your taxonomy data
-list_with_taxonomy = pd.read_csv("maker/list_with_taxonomy.csv") 
-taxon_list = ["superkingdom","phylum","class","order","family","genus","species","#Organism Name"]
-taxon_levels = ["superkingdom","phylum","class","order","family","genus","species","#Organism Name"]
+list_with_taxonomy = pd.read_csv("~/Documents/GitHub/2024-victor-IRs-Victor/results/12-rep/taxonomy.csv") 
+taxon_list = ["superkingdom","phylum","class","order","family","genus","species","ID-replicon"]
+taxon_levels = ["superkingdom","phylum","class","order","family","genus","species","ID-replicon"]
 df = pd.read_csv("data.csv")
 list_with_taxonomy_test = list_with_taxonomy[taxon_list]
 
@@ -32,11 +32,14 @@ for taxon in taxon_list:
     list_options = [{"label": i, "value": i} for i in list_with_taxonomy[taxon].dropna().unique()]
     sidebar_list.append(html.Label(taxon, style={"color": "white"}))
     sidebar_list.append(dcc.Dropdown(
+        id=f"sidebar-{taxon}-dropdown",
         options=list_options,
         multi=True,
         style={"backgroundColor": "#e6f2ff", "color": "#003366"}
     ))
     sidebar_list.append(html.Br())
+
+
 
 sidebar = html.Div(
     sidebar_list,
@@ -77,7 +80,7 @@ content = html.Div(
 )
 
 # Layout
-app.layout = html.Div([sidebar, content])
+app.layout = html.Div(children=[sidebar, content])
 
 # Callback for outer tab selection
 @app.callback(
@@ -162,6 +165,24 @@ def render_tab_content(tab):
             html.Div(id='Compositional-inner-content')
         ]) 
     
+    else:
+        return html.Div("Unknown tab selected", style=styles)
+# Callback for outer tab selection
+@app.callback(
+    dash.dependencies.Output("Structural-inner-content", "children"),
+    [dash.dependencies.Input("Structural-inner-tabs", "value")]
+)
+def render_tab_content(tab):
+    styles = {"color": "#003366"}
+
+    if tab == "Structural-HC":
+        children_ = [
+            html.H3("PCA Analysis", style=styles),
+            html.P("Select a taxonomic level to visualize ACP values.", style=styles), 
+        ]
+        for replicon in list_with_taxonomy["ID-replicon"]:
+            children_.append(dcc.Graph(id=f"pca-scatter-{replicon}"))
+        return html.Div(children_)  
     else:
         return html.Div("Unknown tab selected", style=styles)
     
