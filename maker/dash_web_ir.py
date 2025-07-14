@@ -6,7 +6,7 @@ import numpy as np
 import plotly.express as px
 
 # Load your taxonomy data
-list_with_taxonomy = pd.read_csv("~/Documents/GitHub/2024-victor-IRs-Victor/results/12-rep/taxonomy.csv") 
+list_with_taxonomy = pd.read_csv("/home/vic/2024-victor-IRs-Victor/results/Snakemake/taxonomy.csv") 
 taxon_list = ["superkingdom","phylum","class","order","family","genus","species","ID-replicon"]
 taxon_levels = ["superkingdom","phylum","class","order","family","genus","species","ID-replicon"]
 df = pd.read_csv("data.csv")
