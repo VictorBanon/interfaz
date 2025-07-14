@@ -10,6 +10,7 @@ import numpy as np
 
 class InterfazData:
     def __init__(self, taxon_list, path_data):
+        self.path_data = path_data
         self.df = pd.read_csv(path_data / "taxonomy.csv")
         self.df_filter = pd.read_csv(path_data / "taxonomy.csv")
         self.levels = taxon_list
@@ -228,21 +229,77 @@ class InterfazData:
                 children_ = [
                     html.H3("Structural - HC", style=styles),
                     html.P("Graphs will be loaded per replicon (example only)", style=styles), 
-                ]
+                ] 
                 # This is just an example — replace with actual replicons or logic
-                replicons = self.df_filter["ID-replicon"].dropna().unique()[:3]  # limit to 3 for demo
-                for replicon in replicons:
-                    children_.append(dcc.Graph(id=f"pca-scatter-{replicon}", figure=px.scatter(x=[1, 2], y=[2, 3],title=f"{replicon}()")))
+                id_list = self.df_filter["ID"].dropna().unique()[:10]   
+                for id in id_list:
+                    df_plot = self.df_filter[self.df_filter["ID"]==id]
+                    for index, row in df_plot.iterrows():
+                        try:
+                            #print(f"Index: {index}, Value: {row['column_name']}")
+                            for region in ["all","coding","non_coding"]:
+                                import ast
+                                data_plot_obs = pd.read_csv(self.path_data / row["ID"] / "analysis" / f"{row['ID-replicon']}_{region}_result_obs_aggregated.csv",index_col = 0)
+                                data_plot_sim = pd.read_csv(self.path_data / row["ID"] / "analysis" / f"{row['ID-replicon']}_{region}_result_sim_aggregated.csv",index_col = 0)
+
+                                obs_plot = data_plot_obs.sum().sum()
+
+                                #np.array(ast.literal_eval(val))
+
+                                for id_row_plot,row_plot in enumerate(data_plot_sim.values):
+                                    for id_value,value in enumerate(iterable=row_plot):
+                                        if id_value==0 and id_row_plot==0:
+                                            sim_plot =  np.array(object=ast.literal_eval(value)) 
+                                        else:
+                                            sim_plot +=  np.array(object=ast.literal_eval(value)) 
+
+
+                                print(sim_plot)
+                                # Append the plot 
+                                children_.append(
+                                    dcc.Graph(
+                                        id=f"pca-scatter-{row['ID-replicon']}",
+                                        figure=px.histogram(x=sim_plot, title=f"{row['ID-replicon']}()")
+                                    )
+                                )
+                        except:
+                            print(f"Error for {row['ID-replicon']},region {region}")
                 return html.Div(children_)  
             elif tab == "Structural-HB":
                 children_ = [
-                    html.H3("Structural - HC", style=styles),
+                    html.H3("Structural - HB", style=styles),
                     html.P("Graphs will be loaded per replicon (example only)", style=styles), 
                 ]
-                # This is just an example — replace with actual replicons or logic
-                replicons = self.df_filter["ID-replicon"].dropna().unique()[:3]  # limit to 3 for demo
-                for replicon in replicons:
-                    children_.append(dcc.Graph(id=f"pca-scatter-{replicon}", figure=px.scatter(x=[1, 2], y=[2, 3],title=f"{replicon}()")))
+                # This is just an example — replace with actual replicons or logic 
+                id_list = self.df_filter["ID"].dropna().unique()[:5]
+                for id in id_list:
+                    df_plot = self.df_filter[self.df_filter["ID"]==id]
+                    for index, row in df_plot.iterrows(): 
+                        for region in ["all","coding","non_coding"]:
+                            import ast
+                            data_plot_obs = pd.read_csv(self.path_data / row["ID"] / "analysis" / f"{row['ID-replicon']}_{region}_result_obs_aggregated.csv",index_col = 0)
+                            data_plot_sim = pd.read_csv(self.path_data / row["ID"] / "analysis" / f"{row['ID-replicon']}_{region}_result_sim_aggregated.csv",index_col = 0)
+
+                            obs_plot = data_plot_obs.sum().sum()
+
+                            #np.array(ast.literal_eval(val))
+                            sim_plot = []
+                            x=data_plot_sim.index
+                            for row_plot in data_plot_sim.values: 
+                                median_value = [] 
+                                for id_value,value in enumerate(iterable=row_plot): 
+                                    median_value.append(np.array(object=ast.literal_eval(value)) )                                
+                                median_value = np.median(np.vstack(median_value).flatten()) 
+                                sim_plot.append(median_value) 
+
+                            print(sim_plot)
+                            # Append the plot 
+                            children_.append(
+                                dcc.Graph(
+                                    id=f"pca-scatter-{row['ID-replicon']}",
+                                    figure=px.scatter(x=x,y=sim_plot, title=f"{row['ID-replicon']}()")
+                                )
+                            ) 
                 return html.Div(children_)  
             elif tab == "Structural-HC":
                 children_ = [
