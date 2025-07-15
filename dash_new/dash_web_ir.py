@@ -4,17 +4,18 @@ import dash
 from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
+from pathlib import Path
+from dash.exceptions import PreventUpdate
 
 # Load your taxonomy data
-list_with_taxonomy = pd.read_csv("/home/vic/2024-victor-IRs-Victor/results/Snakemake/taxonomy.csv")
-df = list_with_taxonomy
-
+output_dir = Path("/home/banongav/Documents/GitHub/2024-victor-IRs-Victor/results/12-rep/")
+#"/home/vic/2024-victor-IRs-Victor/results/Snakemake"
+list_with_taxonomy = pd.read_csv(filepath_or_buffer=output_dir/"taxonomy.csv")
+df = list_with_taxonomy 
 
 columns = list(df.columns)
 to_remove = ['full_name', 'Replicons_name', 'Replicons_type']
-columns = [col for col in columns if col not in to_remove] 
-
-
+columns = [col for col in columns if col not in to_remove]  
 
 list_options = [
     dcc.Dropdown(
@@ -27,6 +28,29 @@ list_options = [
                 "padding": "5px"}
     ) for column in columns
     ]
+
+list_options_gen = [
+    dcc.Dropdown(
+        id=f"sidebar-taxon-gen-dropdown",
+        options=columns[:-2],
+        multi=False,
+        style={ 
+                "backgroundColor": "#1E1E2D",
+                "color": "#6896C4",
+                "padding": "5px"}
+    )  ,
+    dcc.Dropdown(
+        id=f"sidebar-value-gen-dropdown",
+        options=[],
+        multi=False,
+        style={ 
+                "backgroundColor": "#1E1E2D",
+                "color": "#6896C4",
+                "padding": "5px"}
+    )  
+    ]
+
+
 
 
 # Sidebar definition (must come before app.layout)
@@ -57,8 +81,17 @@ sidebar = html.Div(
             ),
 
             dbc.Nav([
-                dbc.NavLink("Debrief", href="#", id="nav-debrief", n_clicks=0),
-                dbc.NavLink("General", href="#", id="nav-general", n_clicks=0),
+                dbc.NavLink("Debrief", href="#", id="nav-debrief", n_clicks=0), 
+                dbc.NavLink(
+                    ["General"],
+                    href="#", id="nav-general", n_clicks=0
+                ),  
+                # Collapsible sub-items for Individual
+                html.Div(
+                    id="gen-subitems",
+                    children=list_options_gen,
+                    style={"display": "none"}  # hidden by default
+                ),
                 dbc.NavLink(
                     ["Individual", html.Span(f"{len(df)}", className="badge bg-danger ms-2")],
                     href="#", id="nav-individual", n_clicks=0
@@ -107,9 +140,23 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 # App layout including dcc.Store to track collapse state
 app.layout = html.Div([
     dcc.Store(id='ind-collapse-store', data=False),  # stores whether individual submenu is open
+    dcc.Store(id='gen-collapse-store', data=False),  # stores whether individual submenu is open
     sidebar,
     main_content
 ])
+
+# Callback to update sidebar-value-gen-dropdown based on sidebar-taxon-gen-dropdown
+@app.callback(
+    Output("sidebar-value-gen-dropdown", "options"),
+    Input("sidebar-taxon-gen-dropdown", "value")
+)
+def update_value_dropdown(selected_taxa):
+    if selected_taxa is None:
+        return []  # or return columns to show all options
+    # Here you can apply filtering logic if needed
+    # For now, we'll just return all except selected_taxa
+    return [{"label": taxon, "value": taxon}
+            for taxon in df[selected_taxa].unique()]
 
 # Callback to toggle the Individual submenu visibility
 @app.callback(
@@ -137,6 +184,33 @@ def toggle_individual(individual_clicks, general_clicks,debrief_clicks, settings
     else:
         # If another menu clicked, collapse submenu
         return {"display": "none"}, False
+    
+
+@app.callback(
+    Output("gen-subitems", "style"),
+    Output("gen-collapse-store", "data"),
+    Input("nav-individual", "n_clicks"),
+    Input("nav-general", "n_clicks"),
+    Input("nav-debrief", "n_clicks"),
+    Input("nav-settings", "n_clicks"),
+    State("gen-collapse-store", "data")
+)
+def toggle_individual(individual_clicks, general_clicks,debrief_clicks, settings_clicks, is_open):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        # On app load, submenu is collapsed
+        return {"display": "none"}, False
+
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    if triggered_id == "nav-general":
+        # Toggle submenu open/close
+        new_state = not is_open
+        style = {"display": "block" if new_state else "none"}
+        return style, new_state
+    else:
+        # If another menu clicked, collapse submenu
+        return {"display": "none"}, False
 
 # Callback to update main content area when clicking sidebar nav links
 @app.callback(
@@ -155,11 +229,30 @@ def display_content(click_general,click_debrief, click_individual, click_setting
     
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    content = html.Div(
+    content_general = html.Div(
+        [
+            dcc.Tabs(
+                id="tabs-gen",
+                value="tab-gen-Structural",
+                children=[ 
+                    dcc.Tab(label="Structural", value="tab-gen-Structural", style={"backgroundColor": "#2A2A3C"}, selected_style={"backgroundColor": "#50506D", "color": "white"}),
+                    dcc.Tab(label="Kmer", value="tab-gen-Kmer", style={"backgroundColor": "#2A2A3C"}, selected_style={"backgroundColor": "#50506D", "color": "white"}),
+                    dcc.Tab(label="Spatial", value="tab-gen-Spatial", style={"backgroundColor": "#2A2A3C"}, selected_style={"backgroundColor": "#50506D", "color": "white"}),
+                    dcc.Tab(label="Compositional", value="tab-gen-Compositional", style={"backgroundColor": "#2A2A3C"}, selected_style={"backgroundColor": "#50506D", "color": "white"}),
+                ],
+                colors={"border": "#ccc", "primary": "#50506D", "background": "#2A2A3C"},
+            ),
+            html.Div(id="tab-gen-content", style={"padding": "20px", "backgroundColor": "#2A2A3C", "boxShadow": "0px 0px 10px rgba(0,0,0,0.1)"})
+        ],
+        style={ 
+            "padding": "20px",
+        }
+    ) 
+    content_individual = html.Div(
         [
             dcc.Tabs(
                 id="tabs",
-                value="tab-graph",
+                value="tab-Structural",
                 children=[ 
                     dcc.Tab(label="Structural", value="tab-Structural", style={"backgroundColor": "#2A2A3C"}, selected_style={"backgroundColor": "#50506D", "color": "white"}),
                     dcc.Tab(label="Kmer", value="tab-Kmer", style={"backgroundColor": "#2A2A3C"}, selected_style={"backgroundColor": "#50506D", "color": "white"}),
@@ -177,9 +270,9 @@ def display_content(click_general,click_debrief, click_individual, click_setting
 
     content_map = {
         "nav-debrief": "Lorem Ipsum",
-        "nav-general": content,
-        "nav-individual": content,
-        "nav-settings": create_dumb_graph()
+        "nav-general": content_general,
+        "nav-individual": content_individual,
+        "nav-settings": "Lorem Ipsum"
     }
 
     content = content_map.get(button_id, "No content available.")
@@ -191,12 +284,14 @@ def display_content(click_general,click_debrief, click_individual, click_setting
         return [html.H2(button_id.replace("nav-", "").capitalize()), content]
 
 
+
 # Callback for outer tab selection
+# TODO(VICTOR): https://dash.plotly.com/advanced-callbacks
 @app.callback(
     Output("tab-content", "children"),
     [Input("tabs", "value")]
 )
-def render_tab_content(tab):
+def render_tab_content(tab): 
     styles = {"color": "#003366"}
 
     if tab == "tab-Structural":
@@ -260,22 +355,245 @@ def render_tab_content(tab):
     else:
         return html.Div("Unknown tab selected", style=styles)
 
-def create_dumb_graph():
-    # Dummy data for settings graph
-    x = [1, 2, 3, 4, 5]
-    y = [5, 4, 3, 2, 1]
+# Callback for outer tab selection
+# TODO(VICTOR): https://dash.plotly.com/advanced-callbacks
+@app.callback(
+    Output("tab-gen-content", "children"),
+    [Input("tabs-gen", "value")]
+)
+def render_tab_content_gen(tab): 
+    styles = {"color": "#003366"}
 
-    graph = dcc.Graph(
-        figure=go.Figure(
-            data=[go.Scatter(x=x, y=y, mode='lines+markers', name='Dumb Line')],
-            layout=go.Layout(
-                title='Dumb Graph',
-                xaxis=dict(title='X Axis'),
-                yaxis=dict(title='Y Axis')
+    if tab == "tab-gen-Structural":
+        return html.Div([ 
+            dcc.Tabs(
+                id='gen-Structural-inner-tabs',
+                value='Structural-HC',
+                children=[
+                    dcc.Tab(label='HA', value='Structural-HA',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                    dcc.Tab(label='HB', value='Structural-HB',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                    dcc.Tab(label='HC', value='Structural-HC',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                ],
+                style={ "backgroundColor": "#2A2A3C","marginTop": "10px"},
+            ),
+            html.Div(id='Structural-gen-inner-content')
+        ]) 
+    
+    elif tab == "tab-gen-Kmer":
+        return html.Div([ 
+            dcc.Tabs(
+                id='gen-Kmer-inner-tabs',
+                value='Kmer-ratio',
+                children=[
+                    dcc.Tab(label='Kmer-ratio', value='Kmer-ratio',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                    dcc.Tab(label='Kmer-nucleotide', value='Kmer-nucleotide',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}),  
+                ],
+                style={ "backgroundColor": "#2A2A3C","marginTop": "10px"},
+            ),
+            html.Div(id='gen-Kmer-inner-content')
+        ]) 
+    
+    elif tab == "tab-gen-Spatial":
+        return html.Div([ 
+            dcc.Tabs(
+                id='gen-Spatial-inner-tabs',
+                value='Spatial-Replicon',
+                children=[
+                    dcc.Tab(label='Spatial Replicon', value='Spatial-Replicon',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                    dcc.Tab(label='Spatial Region', value='Spatial-Region',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                    dcc.Tab(label='Spatial IR', value='Spatial-IR',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                ],
+                style={ "backgroundColor": "#2A2A3C","marginTop": "10px"},
+            ),
+            html.Div(id='gen-Spatial-inner-content')
+        ]) 
+    
+    elif tab == "tab-gen-Compositional":
+        return html.Div([ 
+            dcc.Tabs(
+                id='gen-Compositional-inner-tabs',
+                value='Compositional-Catalogue',
+                children=[
+                    dcc.Tab(label='Compositional Catalogue' , value='Compositional-Catalogue',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}), 
+                    dcc.Tab(label='Compositional Philogenie', value='Compositional-Philogenie',style={ "backgroundColor": "#2A2A3C"},selected_style={"backgroundColor": "#50506D"}),  
+                ],
+                style={ "backgroundColor": "#2A2A3C","marginTop": "10px"},
+            ),
+            html.Div(id='Compositional-inner-content')
+        ]) 
+    
+    else:
+        return html.Div("Unknown tab selected", style=styles)
+
+
+# ✅ Inner content for Structural tab
+@app.callback(
+    Output("Structural-inner-content", "children"),
+    Input("Structural-inner-tabs", "value")
+)
+def render_structural_inner_content(tab):
+    styles = {"color": "#003366"}
+
+    if tab == "Structural-HC":
+        children_ = [
+            html.H3("Structural - HC", style=styles),
+            html.P("Graphs will be loaded per replicon (example only)", style=styles), 
+        ] 
+        # This is just an example — replace with actual replicons or logic 
+        for index, row in df[:3].iterrows(): 
+            list_hc = []
+            for zone in ["all","coding","non_coding"]: 
+                try:
+                    result_obs = pd.read_csv(
+                        output_dir/row["ID"]/ "analysis" / f"{row['ID-replicon']}_hc_{zone}.csv",
+                        index_col=0
+                    ) 
+                    # Append the plot 
+                    list_hc.append(
+                        dcc.Graph(
+                            id=f"pca-scatter-{zone}-{row['ID-replicon']}",
+                            figure=plotly_hc(row,zone,result_obs)
+                        )
+                    ) 
+                except: 
+                    # Append the plot 
+                    list_hc.append("Error"                    ) 
+            children_.append(html.Div(
+                style={'display': 'flex', 'justifyContent': 'space-around'},
+                children= list_hc
             )
+            ) 
+
+        return html.Div(children_)   
+    else:
+        return html.Div(f"Content for {tab} not yet implemented.", style=styles)
+
+
+
+# ✅ Inner content for Structural tab
+@app.callback(
+    Output("Structural-gen-inner-content", "children"),
+    Input("gen-Structural-inner-tabs", "value"), 
+    Input("sidebar-value-gen-dropdown", "value"),
+    Input("sidebar-taxon-gen-dropdown", "value")
+)
+def render_structural_inner_content(tab,value,taxon):
+    styles = {"color": "#003366"}
+
+    if tab == "Structural-HC":
+        children_ = [
+            html.H3("Structural - HC", style=styles),
+            html.P("Graphs will be loaded per replicon (example only)", style=styles), 
+        ]  
+        list_hc = []
+        for zone in ["all","coding","non_coding"]:  
+            path = output_dir/
+            print(taxon,value)
+            df_tmp=df[df[taxon]==value].iloc[0]
+            for i in range(columns.index(taxon)): 
+                print(df_tmp[columns[i]].value)
+                path = path/df_tmp[columns[i]].value
+            # result_obs = pd.read_csv(
+            #     path/f"{row['ID-replicon']}_hc_{zone}.csv",
+            #     index_col=0
+            # ) 
+            # Sample dummy data
+            df_text = pd.DataFrame({
+                'x': [1, 2, 3, 4, 5],
+                'y': [10, 15, 13, 17, 20]
+            })
+            import plotly.express as px
+            # Create a simple line plot
+            fig = px.line(df_text, x='x', y='y', title=str(path))
+            # Append the plot 
+            list_hc.append(
+                dcc.Graph( 
+                    figure=fig
+                )
+            )  
+        children_.append(html.Div(
+            style={'display': 'flex', 'width': '40%'},
+            children= list_hc
         )
+        ) 
+
+        return html.Div(children_)   
+    else:
+        return html.Div(f"Content for {tab} not yet implemented.", style=styles)
+
+
+def plotly_hc(row:pd.Series, zone:str, result_obs:pd.DataFrame)->None:
+    """Plot hc with plotly."""
+    colorscale = [
+        [0.0, "blue"],     # log10(0.1)
+        [0.333, "white"],  # log10(1)
+        [0.666, "red"],    # log10(10)
+        [1.0, "black"],    # log10(100)
+    ]
+
+    # Convert data to log scale for proper color mapping
+    z_log = np.log10(result_obs)
+
+
+    # Format original values as text for display in cells
+    text_vals = result_obs.round(2).astype(str)
+
+    # Define custom Plotly colorscale
+    colorscale = [
+        [0.0, "blue"],
+        [0.333, "white"],
+        [0.666, "red"],
+        [1.0, "black"],
+    ]
+
+    # Create the heatmap
+    fig = go.Figure(data=go.Heatmap(
+        z=z_log,
+        x=result_obs.columns,  # Column labels
+        y=result_obs.index,    # Row labels
+        colorscale=colorscale,
+        zmin=-1,
+        zmax=2,
+        #text=text_vals.values,
+        texttemplate="%{text}",  # display cell values
+        hovertemplate="Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
+        colorbar={
+            "tickvals": [-1, 0, 1, 2],
+            "ticktext": ["10⁻¹", "10⁰", "10¹", "10²"],
+            "title": "Log Scale",
+        },
+    ))
+
+    # Add layout details
+    fig.update_layout(
+        title=f"{row["species"]} - {zone}",
+        xaxis_title="Arm Length",
+        yaxis_title="Gap Length",
+        yaxis={
+        "tickmode": "linear",
+        "tick0": result_obs.index.min(),  # start of ticks
+        "dtick": 2,  # step size of 2
+        },  
+        template="plotly_white", 
+            shapes=[
+        # Top border
+        {"type": "line", "xref": "paper", "yref": "paper", "x0": 0, "y0": 1, "x1": 1, "y1": 1,
+             "line": {"color": "black", "width": 2}},
+        # Bottom border
+        {"type": "line", "xref": "paper", "yref": "paper", "x0": 0, "y0": 0, "x1": 1, "y1": 0,
+             "line": {"color": "black", "width": 2}},
+        # Left border
+        {"type": "line", "xref": "paper", "yref": "paper", "x0": 0, "y0": 0, "x1": 0, "y1": 1,
+             "line": {"color": "black", "width": 2}},
+        # Right border
+        {"type": "line", "xref": "paper", "yref": "paper", "x0": 1, "y0": 0, "x1": 1, "y1": 1,
+             "line": {"color": "black", "width": 2}},
+    ],
     )
-    return html.Div([graph])
+
+ 
+    return fig
+
 
 if __name__ == "__main__":
     app.run(debug=True)
