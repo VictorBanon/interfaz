@@ -1,0 +1,9 @@
+,ID,PC1,PC2,order,Replicons_type,Type,Explained Variance 1,Explained Variance 2
+0,chromosome_GCF_002951835.1_ASM295183v1,-9.159711812774283,19.064635109842722,Neisseriales,chromosome,chromosome,?,?
+1,chromosome_GCF_014054985.1_ASM1405498v1,-11.326492880709639,15.128780608649452,Neisseriales,chromosome,chromosome,?,?
+2,plasmid_pDSM18271_GCF_014054985.1_ASM1405498v1,-9.567304180313027,-6.332139996988954,Neisseriales,plasmid_pDSM18271,plasmid,?,?
+3,chromosome_GCF_014054525.1_ASM1405452v1,-10.81282845394791,-4.1100635260056295,Neisseriales,chromosome,chromosome,?,?
+4,chromosome_GCF_022354465.1_ASM2235446v1,-8.453474481204832,-5.76402784219013,Neisseriales,chromosome,chromosome,?,?
+5,chromosome_GCF_016894345.1_ASM1689434v1,-8.118059643381752,-7.791170045808743,Neisseriales,chromosome,chromosome,?,?
+6,chromosome_GCF_022870845.1_ASM2287084v1,-8.816957043060532,-10.716670665116798,Neisseriales,chromosome,chromosome,?,?
+7,chromosome_GCF_022749515.1_ASM2274951v1,66.25482849539198,0.5206563576180984,Neisseriales,chromosome,chromosome,?,?

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def taxon_rst(file_path:Path,link_list,taxon)->None:
 
     rst_file = f"""{taxon}  
@@ -10,7 +11,7 @@ def taxon_rst(file_path:Path,link_list,taxon)->None:
     :caption: Contents:
 
 """
-    rst_file += "\n".join(link_list) 
+    rst_file += "\n".join(link_list)
 
     rst_file += """
 .. raw:: html
@@ -144,7 +145,7 @@ def taxon_rst(file_path:Path,link_list,taxon)->None:
     Plotly.newPlot('plotly-div1', [trace2]);
     </script>
     """
- 
-    # Write text to the file 
-    file_path.write_text(rst_file, encoding='utf-8')
-    print(file_path) 
+
+    # Write text to the file
+    file_path.write_text(rst_file, encoding="utf-8")
+    print(file_path)

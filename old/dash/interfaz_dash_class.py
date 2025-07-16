@@ -1,11 +1,12 @@
-import dash
-from dash import html, dcc, Input, Output, State, ALL, no_update
-import dash_bootstrap_components as dbc
-import pandas as pd
 from pathlib import Path
-from dash.exceptions import PreventUpdate
-import plotly.express as px
+
+import dash
+import dash_bootstrap_components as dbc
 import numpy as np
+import pandas as pd
+import plotly.express as px
+from dash import ALL, Input, Output, State, dcc, html, no_update
+from dash.exceptions import PreventUpdate
 
 
 class InterfazData:
@@ -16,14 +17,14 @@ class InterfazData:
         self.levels = taxon_list
 
         for taxon in taxon_list:
-            self.df[f"{taxon}_acp_1"] = np.random.rand(len(self.df[taxon])).tolist()  
-            self.df[f"{taxon}_acp_2"] = np.random.rand(len(self.df[taxon])).tolist()  
+            self.df[f"{taxon}_acp_1"] = np.random.rand(len(self.df[taxon])).tolist()
+            self.df[f"{taxon}_acp_2"] = np.random.rand(len(self.df[taxon])).tolist()
 
         # ✅ Add suppress_callback_exceptions
         self.app = dash.Dash(
             __name__,
             external_stylesheets=[dbc.themes.BOOTSTRAP],
-            suppress_callback_exceptions=True
+            suppress_callback_exceptions=True,
         )
 
         sidebar = self.get_sidebar()
@@ -45,10 +46,10 @@ class InterfazData:
                     "padding": "20px",
                     "backgroundColor": "#f0f8ff",
                     "borderRadius": "10px",
-                    "boxShadow": "0px 0px 10px rgba(0,0,0,0.1)"
-                })
+                    "boxShadow": "0px 0px 10px rgba(0,0,0,0.1)",
+                }),
             ],
-            style={"margin-left": "320px", "padding": "20px"}
+            style={"margin-left": "320px", "padding": "20px"},
         )
 
         self.layout = html.Div(children=[sidebar, content])
@@ -69,7 +70,7 @@ class InterfazData:
                 id={"type": "taxonomy-dropdown", "level": taxon},
                 options=list_options,
                 multi=True,
-                style={"backgroundColor": "#e6f2ff", "color": "#003366"}
+                style={"backgroundColor": "#e6f2ff", "color": "#003366"},
             ))
             sidebar_list.append(html.Br())
 
@@ -84,7 +85,7 @@ class InterfazData:
                 "padding": "20px",
                 "background": "linear-gradient(180deg, #2e8b57, #3cb371)",
                 "overflowY": "scroll",
-                "boxShadow": "2px 2px 10px rgba(0,0,0,0.3)"
+                "boxShadow": "2px 2px 10px rgba(0,0,0,0.3)",
             },
         )
 
@@ -93,7 +94,7 @@ class InterfazData:
     def run(self):
         self.app.run(debug=True)
 
-    def register_callbacks(self): 
+    def register_callbacks(self):
         # ✅ Cascading dropdown callback
         @self.app.callback(
             Output({"type": "taxonomy-dropdown", "level": ALL}, "value"),
@@ -106,7 +107,7 @@ class InterfazData:
             if not ctx.triggered:
                 raise PreventUpdate
 
-            triggered_id = eval(ctx.triggered[0]['prop_id'].split('.')[0])
+            triggered_id = eval(ctx.triggered[0]["prop_id"].split(".")[0])
             triggered_level = triggered_id["level"]
             triggered_index = self.levels.index(triggered_level)
 
@@ -139,7 +140,7 @@ class InterfazData:
         # ✅ Tab container callback
         @self.app.callback(
             Output("tab-content", "children"),
-            Input("tabs", "value")
+            Input("tabs", "value"),
         )
         def render_tab_content(tab):
             styles = {"color": "#003366"}
@@ -152,75 +153,74 @@ class InterfazData:
                         id="pca-taxon-dropdown",
                         options=[{"label": t, "value": t} for t in self.levels],
                         value="phylum",
-                        style={"width": "300px", "marginBottom": "20px"}
+                        style={"width": "300px", "marginBottom": "20px"},
                     ),
-                    dcc.Graph(id="pca-scatter-plot")
+                    dcc.Graph(id="pca-scatter-plot"),
                 ])
-            elif tab == "tab-Structural":
+            if tab == "tab-Structural":
                 return html.Div([
                     html.H3("Structural", style=styles),
                     dcc.Tabs(
-                        id='Structural-inner-tabs',
-                        value='Structural-HC',
+                        id="Structural-inner-tabs",
+                        value="Structural-HC",
                         children=[
-                            dcc.Tab(label='HA', value='Structural-HA'), 
-                            dcc.Tab(label='HB', value='Structural-HB'), 
-                            dcc.Tab(label='HC', value='Structural-HC'), 
+                            dcc.Tab(label="HA", value="Structural-HA"),
+                            dcc.Tab(label="HB", value="Structural-HB"),
+                            dcc.Tab(label="HC", value="Structural-HC"),
                         ],
                         style={"marginTop": "10px"},
                     ),
-                    html.Div(id='Structural-inner-content')
-                ]) 
-            elif tab == "tab-Kmer":
+                    html.Div(id="Structural-inner-content"),
+                ])
+            if tab == "tab-Kmer":
                 return html.Div([
                     html.H3("Kmer", style=styles),
                     dcc.Tabs(
-                        id='Kmer-inner-tabs',
-                        value='Kmer-ratio',
+                        id="Kmer-inner-tabs",
+                        value="Kmer-ratio",
                         children=[
-                            dcc.Tab(label='Kmer-ratio', value='Kmer-ratio'), 
-                            dcc.Tab(label='Kmer-nucleotide', value='Kmer-nucleotide'),  
+                            dcc.Tab(label="Kmer-ratio", value="Kmer-ratio"),
+                            dcc.Tab(label="Kmer-nucleotide", value="Kmer-nucleotide"),
                         ],
                         style={"marginTop": "10px"},
                     ),
-                    html.Div(id='Kmer-inner-content')
-                ]) 
-            elif tab == "tab-Spatial":
+                    html.Div(id="Kmer-inner-content"),
+                ])
+            if tab == "tab-Spatial":
                 return html.Div([
                     html.H3("Spatial", style=styles),
                     dcc.Tabs(
-                        id='Spatial-inner-tabs',
-                        value='Spatial-Replicon',
+                        id="Spatial-inner-tabs",
+                        value="Spatial-Replicon",
                         children=[
-                            dcc.Tab(label='Spatial Replicon', value='Spatial-Replicon'), 
-                            dcc.Tab(label='Spatial Region', value='Spatial-Region'), 
-                            dcc.Tab(label='Spatial IR', value='Spatial-IR'), 
+                            dcc.Tab(label="Spatial Replicon", value="Spatial-Replicon"),
+                            dcc.Tab(label="Spatial Region", value="Spatial-Region"),
+                            dcc.Tab(label="Spatial IR", value="Spatial-IR"),
                         ],
                         style={"marginTop": "10px"},
                     ),
-                    html.Div(id='Spatial-inner-content')
-                ]) 
-            elif tab == "tab-Compositional":
+                    html.Div(id="Spatial-inner-content"),
+                ])
+            if tab == "tab-Compositional":
                 return html.Div([
                     html.H3("Compositional", style=styles),
                     dcc.Tabs(
-                        id='Compositional-inner-tabs',
-                        value='Compositional-Catalogue',
+                        id="Compositional-inner-tabs",
+                        value="Compositional-Catalogue",
                         children=[
-                            dcc.Tab(label='Compositional Catalogue' , value='Compositional-Catalogue'), 
-                            dcc.Tab(label='Compositional Philogenie', value='Compositional-Philogenie'),  
+                            dcc.Tab(label="Compositional Catalogue" , value="Compositional-Catalogue"),
+                            dcc.Tab(label="Compositional Philogenie", value="Compositional-Philogenie"),
                         ],
                         style={"marginTop": "10px"},
                     ),
-                    html.Div(id='Compositional-inner-content')
-                ]) 
-            else:
-                return html.Div("Unknown tab selected", style=styles)
+                    html.Div(id="Compositional-inner-content"),
+                ])
+            return html.Div("Unknown tab selected", style=styles)
 
         # ✅ Inner content for Structural tab
         @self.app.callback(
             Output("Structural-inner-content", "children"),
-            Input("Structural-inner-tabs", "value")
+            Input("Structural-inner-tabs", "value"),
         )
         def render_structural_inner_content(tab):
             styles = {"color": "#003366"}
@@ -228,10 +228,10 @@ class InterfazData:
             if tab == "Structural-HA":
                 children_ = [
                     html.H3("Structural - HC", style=styles),
-                    html.P("Graphs will be loaded per replicon (example only)", style=styles), 
-                ] 
+                    html.P("Graphs will be loaded per replicon (example only)", style=styles),
+                ]
                 # This is just an example — replace with actual replicons or logic
-                id_list = self.df_filter["ID"].dropna().unique()[:10]   
+                id_list = self.df_filter["ID"].dropna().unique()[:10]
                 for id in id_list:
                     df_plot = self.df_filter[self.df_filter["ID"]==id]
                     for index, row in df_plot.iterrows():
@@ -249,32 +249,32 @@ class InterfazData:
                                 for id_row_plot,row_plot in enumerate(data_plot_sim.values):
                                     for id_value,value in enumerate(iterable=row_plot):
                                         if id_value==0 and id_row_plot==0:
-                                            sim_plot =  np.array(object=ast.literal_eval(value)) 
+                                            sim_plot =  np.array(object=ast.literal_eval(value))
                                         else:
-                                            sim_plot +=  np.array(object=ast.literal_eval(value)) 
+                                            sim_plot +=  np.array(object=ast.literal_eval(value))
 
 
                                 print(sim_plot)
-                                # Append the plot 
+                                # Append the plot
                                 children_.append(
                                     dcc.Graph(
                                         id=f"pca-scatter-{row['ID-replicon']}",
-                                        figure=px.histogram(x=sim_plot, title=f"{row['ID-replicon']}()")
-                                    )
+                                        figure=px.histogram(x=sim_plot, title=f"{row['ID-replicon']}()"),
+                                    ),
                                 )
                         except:
                             print(f"Error for {row['ID-replicon']},region {region}")
-                return html.Div(children_)  
-            elif tab == "Structural-HB":
+                return html.Div(children_)
+            if tab == "Structural-HB":
                 children_ = [
                     html.H3("Structural - HB", style=styles),
-                    html.P("Graphs will be loaded per replicon (example only)", style=styles), 
+                    html.P("Graphs will be loaded per replicon (example only)", style=styles),
                 ]
-                # This is just an example — replace with actual replicons or logic 
+                # This is just an example — replace with actual replicons or logic
                 id_list = self.df_filter["ID"].dropna().unique()[:5]
                 for id in id_list:
                     df_plot = self.df_filter[self.df_filter["ID"]==id]
-                    for index, row in df_plot.iterrows(): 
+                    for index, row in df_plot.iterrows():
                         for region in ["all","coding","non_coding"]:
                             import ast
                             data_plot_obs = pd.read_csv(self.path_data / row["ID"] / "analysis" / f"{row['ID-replicon']}_{region}_result_obs_aggregated.csv",index_col = 0)
@@ -285,40 +285,39 @@ class InterfazData:
                             #np.array(ast.literal_eval(val))
                             sim_plot = []
                             x=data_plot_sim.index
-                            for row_plot in data_plot_sim.values: 
-                                median_value = [] 
-                                for id_value,value in enumerate(iterable=row_plot): 
-                                    median_value.append(np.array(object=ast.literal_eval(value)) )                                
-                                median_value = np.median(np.vstack(median_value).flatten()) 
-                                sim_plot.append(median_value) 
+                            for row_plot in data_plot_sim.values:
+                                median_value = []
+                                for id_value,value in enumerate(iterable=row_plot):
+                                    median_value.append(np.array(object=ast.literal_eval(value)) )
+                                median_value = np.median(np.vstack(median_value).flatten())
+                                sim_plot.append(median_value)
 
                             print(sim_plot)
-                            # Append the plot 
+                            # Append the plot
                             children_.append(
                                 dcc.Graph(
                                     id=f"pca-scatter-{row['ID-replicon']}",
-                                    figure=px.scatter(x=x,y=sim_plot, title=f"{row['ID-replicon']}()")
-                                )
-                            ) 
-                return html.Div(children_)  
-            elif tab == "Structural-HC":
+                                    figure=px.scatter(x=x,y=sim_plot, title=f"{row['ID-replicon']}()"),
+                                ),
+                            )
+                return html.Div(children_)
+            if tab == "Structural-HC":
                 children_ = [
                     html.H3("Structural - HC", style=styles),
-                    html.P("Graphs will be loaded per replicon (example only)", style=styles), 
+                    html.P("Graphs will be loaded per replicon (example only)", style=styles),
                 ]
                 # This is just an example — replace with actual replicons or logic
                 replicons = self.df_filter["ID-replicon"].dropna().unique()[:3]  # limit to 3 for demo
                 for replicon in replicons:
                     children_.append(dcc.Graph(id=f"pca-scatter-{replicon}", figure=px.scatter(x=[1, 2], y=[2, 3],title=f"{replicon}()")))
-                return html.Div(children_)  
-            else:
-                return html.Div(f"Content for {tab} not yet implemented.", style=styles)
+                return html.Div(children_)
+            return html.Div(f"Content for {tab} not yet implemented.", style=styles)
 
         # ✅ PCA scatter plot callback
         @self.app.callback(
             Output("pca-scatter-plot", "figure"),
-            Input("pca-taxon-dropdown", "value")
-        )  
+            Input("pca-taxon-dropdown", "value"),
+        )
         def update_pca_scatter(taxon):
             x_col = f"{taxon}_acp_1"
             y_col = f"{taxon}_acp_2"
@@ -336,13 +335,13 @@ class InterfazData:
             fig.update_layout(
                 plot_bgcolor="#f0f8ff",
                 paper_bgcolor="#f0f8ff",
-                hovermode="closest"
+                hovermode="closest",
             )
             return fig
 
 
 # Run the app
-if __name__ == '__main__':
+if __name__ == "__main__":
     taxon_list = ["superkingdom", "phylum", "class", "order", "family", "genus", "species", "ID-replicon"]
     data_path = Path("~/Documents/GitHub/2024-victor-IRs-Victor/results/12-rep").expanduser()
     interfaz = InterfazData(taxon_list, data_path)

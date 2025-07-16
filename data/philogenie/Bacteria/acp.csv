@@ -1,0 +1,14 @@
+,ID,PC1,PC2,superkingdom,Replicons_type,Type,Explained Variance 1,Explained Variance 2
+0,chromosome_GCF_002951835.1_ASM295183v1,-20.270645712572787,18.756029308622406,Bacteria,chromosome,chromosome,?,?
+1,chromosome_GCF_014054985.1_ASM1405498v1,54.490304777400056,21.42469752818308,Bacteria,chromosome,chromosome,?,?
+2,plasmid_pDSM18271_GCF_014054985.1_ASM1405498v1,-44.784417896463914,-27.448943450792207,Bacteria,plasmid_pDSM18271,plasmid,?,?
+3,chromosome_GCF_014054525.1_ASM1405452v1,-9.082317712842128,113.57883550543687,Bacteria,chromosome,chromosome,?,?
+4,chromosome_GCF_022354465.1_ASM2235446v1,23.476042334283907,17.51361593492105,Bacteria,chromosome,chromosome,?,?
+5,chromosome_GCF_016894345.1_ASM1689434v1,10.636609141557283,-6.703403403342535,Bacteria,chromosome,chromosome,?,?
+6,chromosome_GCF_022870845.1_ASM2287084v1,112.07407328879924,-43.34389015836131,Bacteria,chromosome,chromosome,?,?
+7,chromosome_GCF_022749515.1_ASM2274951v1,35.61119343291114,4.97923245405465,Bacteria,chromosome,chromosome,?,?
+8,chromosome_1_GCF_001718895.1_ASM171889v1,-13.30581256198094,-16.17568933029224,Bacteria,chromosome_1,chromosome,?,?
+9,chromosome_2_GCF_001718895.1_ASM171889v1,-29.518030019601692,-13.38129835570421,Bacteria,chromosome_2,chromosome,?,?
+10,chromosome_3_GCF_001718895.1_ASM171889v1,-42.617052586716575,-22.056770595952994,Bacteria,chromosome_3,chromosome,?,?
+11,chromosome_GCF_000009145.1_ASM914v1,-39.47562594309067,-22.336550133165332,Bacteria,chromosome,chromosome,?,?
+12,chromosome_GCA_019038085.1_ASM1903808v1,-37.234320541682976,-24.805865303607202,Bacteria,chromosome,chromosome,?,?

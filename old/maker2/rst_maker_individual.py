@@ -1,7 +1,8 @@
 from pathlib import Path
 
+
 def individual_rst(path:Path,path_data)->None:
-    file_path = path / 'index.rst'  
+    file_path = path / "index.rst"
 
     rst_file = f"""
 {path.name}
@@ -135,7 +136,7 @@ def individual_rst(path:Path,path_data)->None:
  
     </script>
     """
- 
-    # Write text to the file 
-    file_path.write_text(rst_file, encoding='utf-8')
+
+    # Write text to the file
+    file_path.write_text(rst_file, encoding="utf-8")
     print(file_path)

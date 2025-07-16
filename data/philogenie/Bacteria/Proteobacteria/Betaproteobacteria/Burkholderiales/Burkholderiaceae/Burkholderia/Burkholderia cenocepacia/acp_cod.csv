@@ -1,0 +1,4 @@
+,ID,PC1,PC2,species,Replicons_type,Type,Explained Variance 1,Explained Variance 2
+0,chromosome_1_GCF_001718895.1_ASM171889v1,17.17013905072934,-3.5912967234583433,Burkholderia cenocepacia,chromosome_1,chromosome,?,?
+1,chromosome_2_GCF_001718895.1_ASM171889v1,-5.114707235427387,15.122008615168912,Burkholderia cenocepacia,chromosome_2,chromosome,?,?
+2,chromosome_3_GCF_001718895.1_ASM171889v1,-12.055431815301953,-11.530711891710565,Burkholderia cenocepacia,chromosome_3,chromosome,?,?

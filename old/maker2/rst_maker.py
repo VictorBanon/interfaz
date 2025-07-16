@@ -3,22 +3,23 @@
 import re
 from pathlib import Path
 
+
 def rst_individual(
     rst_file_path,
     plot1_data,
     plot2_data,
     click_event,
-    heatmap_data
+    heatmap_data,
 ):
     rst_path = Path(rst_file_path)
-    content = rst_path.read_text(encoding='utf-8')
+    content = rst_path.read_text(encoding="utf-8")
 
     # --- Plot 1 ---
     content = re.sub(
         r"Plotly\.newPlot\('plotly-div1'.*?\}\]\);",
         plot1_data.strip(),
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
     # --- Plot 2 ---
@@ -26,7 +27,7 @@ def rst_individual(
         r"var trace2 = \{.*?Plotly\.newPlot\('plotly-div2', \[trace2\]\);",
         plot2_data.strip(),
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
     # --- Click event ---
@@ -34,7 +35,7 @@ def rst_individual(
         r"var plot2Div = document\.getElementById\('plotly-div2'\);.*?window\.open\(url, '_blank'\);",
         click_event.strip(),
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
     # --- Heatmap ---
@@ -42,14 +43,14 @@ def rst_individual(
         r"var xLabels = \[.*?Plotly\.newPlot\('plotly-div3', \[heatmap\]\);",
         heatmap_data.strip(),
         content,
-        flags=re.DOTALL
+        flags=re.DOTALL,
     )
 
     # Save
-    rst_path.write_text(content, encoding='utf-8')
+    rst_path.write_text(content, encoding="utf-8")
     print(f"RST file '{rst_file_path}' updated.")
 
- 
+
 
 # Define your new content
 plot1_data = """
@@ -107,9 +108,9 @@ Plotly.newPlot('plotly-div3', [heatmap]);
 
 # Call the update function
 update_rst(
-    'my_tabs.rst',
+    "my_tabs.rst",
     plot1_data,
     plot2_data,
     click_event,
-    heatmap_data
+    heatmap_data,
 )

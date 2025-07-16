@@ -1,0 +1,14 @@
+,ID,PC1,PC2,class,Replicons_type,Type,Explained Variance 1,Explained Variance 2
+0,chromosome_GCF_002951835.1_ASM295183v1,-21.117419903822036,19.87568686436176,Betaproteobacteria,chromosome,chromosome,?,?
+1,chromosome_GCF_014054985.1_ASM1405498v1,57.484011752457675,17.768546350892322,Betaproteobacteria,chromosome,chromosome,?,?
+2,plasmid_pDSM18271_GCF_014054985.1_ASM1405498v1,-47.567485932580304,-24.68451305837008,Betaproteobacteria,plasmid_pDSM18271,plasmid,?,?
+3,chromosome_GCF_014054525.1_ASM1405452v1,-6.384286527457926,116.04013000287097,Betaproteobacteria,chromosome,chromosome,?,?
+4,chromosome_GCF_022354465.1_ASM2235446v1,22.667969834498848,16.568341897351612,Betaproteobacteria,chromosome,chromosome,?,?
+5,chromosome_GCF_016894345.1_ASM1689434v1,11.682281317276988,-8.850868593600303,Betaproteobacteria,chromosome,chromosome,?,?
+6,chromosome_GCF_022870845.1_ASM2287084v1,110.97884227584106,-41.9439141669131,Betaproteobacteria,chromosome,chromosome,?,?
+7,chromosome_GCF_022749515.1_ASM2274951v1,36.29754632793572,1.6407188770491818,Betaproteobacteria,chromosome,chromosome,?,?
+8,chromosome_1_GCF_001718895.1_ASM171889v1,-14.045021304857316,-16.998174287928357,Betaproteobacteria,chromosome_1,chromosome,?,?
+9,chromosome_2_GCF_001718895.1_ASM171889v1,-30.04451412362099,-12.416448612360849,Betaproteobacteria,chromosome_2,chromosome,?,?
+10,chromosome_3_GCF_001718895.1_ASM171889v1,-41.49675764631109,-21.58738255483204,Betaproteobacteria,chromosome_3,chromosome,?,?
+11,chromosome_GCF_000009145.1_ASM914v1,-39.53480300474271,-21.289575233112544,Betaproteobacteria,chromosome,chromosome,?,?
+12,chromosome_GCA_019038085.1_ASM1903808v1,-38.92036306461795,-24.12254748540848,Betaproteobacteria,chromosome,chromosome,?,?
