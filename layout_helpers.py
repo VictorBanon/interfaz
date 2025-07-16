@@ -8,7 +8,7 @@ from plot import plotly_hc_acp
 
 
 # Load your taxonomy data
-output_dir = Path("/home/vic/2024-victor-IRs-Victor/results/Snakemake")
+output_dir = Path("/home/vic/2024-victor-IRs-Victor/results/data")
 list_with_taxonomy = pd.read_csv(filepath_or_buffer=output_dir/"taxonomy.csv")
 df = list_with_taxonomy
 
