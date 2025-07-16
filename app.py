@@ -101,7 +101,7 @@ app.layout = html.Div(style={
                         dcc.Tab(label="Coding", value="coding"),
                         dcc.Tab(label="Non Coding", value="non_coding"), 
                     ]),
-                    dcc.Graph(id="plot_i", figure=top_figure)],
+                    dcc.Graph(id="plot_i", figure=top_figure,style={'height': '500px'}  )],
                     width=6
                     ),
                 dbc.Col([
