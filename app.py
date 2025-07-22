@@ -80,14 +80,46 @@ app.layout = html.Div(style={
     dbc.Row(style={"height": "100%"}, children=[
 
         # Sidebar
-        dbc.Col(html.Div("sidebar", style={
-            "height": "100%",
+        dbc.Col([
+            # Sidebar Header / Title
+            html.Div("IR analysis", style={
+                "padding": "20px",
+                "background-color": bio_colors["accent"],
+                "color": "white",
+                "font-weight": "bold",
+                "border-radius": "0px",
+                "text-align": "center"
+            }),
+
+            # Card inside the sidebar
+            dbc.Card(
+                dbc.CardBody([
+                    html.H4("Debrief", className="card-title"),
+                    html.P("In this part, we try to present our results.", className="card-text"),
+                ]),
+                style={"width": "100%",
+                "background-color": bio_colors["background"],
+                "color": "white", 
+                "margin-bottom": "20px",  # 👈 adds space below
+                "text-align": "center" }
+            ),
+            dbc.Card(
+                dbc.CardBody([
+                    html.H4("Article", className="card-title"),
+                    html.P("HEre it is the link to the article.", className="card-text"),
+                ]),
+                style={"width": "100%",
+                "background-color": bio_colors["background"],
+                "color": "white",
+                "margin-bottom": "20px",  # 👈 adds space below
+                "text-align": "center"  }
+            )
+        ], width=2, style={
+            "height": "100vh",  # Full viewport height
+            "background-color":bio_colors["accent"],   
+            "text-align": "center",
             "padding": "20px",
-            "background-color": bio_colors["accent"],
-            "color": "white",
-            "font-weight": "bold",
-            "border-radius": "0px",
-        }), width=2, style={"height": "100%"}),
+        }),
 
         # Main content
         dbc.Col([

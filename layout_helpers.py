@@ -104,5 +104,5 @@ def get_structural_subtabs(tab_value):
             dbc.Col(dropdown_taxons, style={"height": "100%"}),
             dbc.Col(dcc.Graph(id="plot_pc1",figure=fig1, style={"height": "100%"}), style={"height": "100%"}),
             dbc.Col(dcc.Graph(id="plot_pc2",figure=fig2, style={"height": "100%"}), style={"height": "100%"}),
-        ], style={"height": "100%"})
+        ], style={"height": "100%","backgroundColor": "#ffffff"})
     return html.Div() 
