@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Plotly con Click</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f4f4f4;
+    }
+    #grafico, #clickeados {
+      width: 90%;
+      max-width: 800px;
+      height: 400px;
+      margin: 2rem auto;
+      border: 1px solid #ccc;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Gráfico principal</h2>
+  <div id="grafico"></div>
+
+  <h2>Puntos clickeados</h2>
+  <div id="clickeados"></div>
+
+  <script>
+    // Datos del gráfico principal
+    const mainData = [{
+      x: [1, 2, 3, 4, 5],
+      y: [10, 15, 13, 17, 22],
+      type: 'scatter',
+      mode: 'markers',
+      text: ['A', 'B', 'C', 'D', 'E'],  // Nombres de los puntos
+      marker: { size: 12, color: 'blue' }
+    }];
+
+    const mainLayout = {
+      title: 'Haz clic en un punto',
+      xaxis: { title: 'Eje X' },
+      yaxis: { title: 'Eje Y' }
+    };
+
+    Plotly.newPlot('grafico', mainData, mainLayout);
+
+    // Lista acumulada de puntos clickeados
+    let clickedNames = [];
+
+    // Escuchar eventos de clic
+    const graficoDiv = document.getElementById('grafico');
+    graficoDiv.on('plotly_click', function(data) {
+      const pointName = data.points[0].text;
+      clickedNames.push(pointName);
+
+      // Crear gráfico de texto con los nombres clickeados
+      const clickedData = [{
+        x: clickedNames.map((_, i) => i + 1),
+        y: clickedNames,
+        type: 'bar',
+        marker: { color: 'orange' }
+      }];
+
+      const clickedLayout = {
+        title: 'Nombres de puntos clickeados',
+        yaxis: { title: 'Nombre' },
+        xaxis: { title: 'Orden de clic' }
+      };
+
+      Plotly.newPlot('clickeados', clickedData, clickedLayout);
+    });
+  </script>
+</body>
+</html>

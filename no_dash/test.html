@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard con Tabs y carga CSV directa</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f4f6;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: 100vh;
+    }
+    .sidebar {
+      background-color: #1f2937;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      margin-bottom: 30px;
+    }
+    .sidebar ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .sidebar li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      user-select: none;
+    }
+    .sidebar li:hover, .sidebar li.active {
+      background-color: #374151;
+    }
+    .main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    .header {
+      background-color: white;
+      padding: 20px;
+      flex: 0 0 80px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-weight: 600;
+      font-size: 1.3rem;
+    }
+    .content {
+      flex: 1 1 auto;
+      background: white;
+      padding: 20px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #111827;
+      overflow: hidden;
+    }
+    #plotlyChart {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <h2>MiPanel</h2>
+      <ul>
+        <li class="active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</li>
+        <li data-tab="usuarios"><i class="fas fa-users"></i> Usuarios</li>
+        <li data-tab="config"><i class="fas fa-cog"></i> Configuración</li>
+        <li data-tab="salir"><i class="fas fa-sign-out-alt"></i> Salir</li>
+      </ul>
+    </aside>
+    <div class="main">
+      <header class="header" id="headerTitle">Dashboard</header>
+      <div class="content">
+        <!-- Dashboard cards grid -->
+        <div id="dashboard" class="tab-section active" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px;">
+          <div class="card">
+            <h3>Gráfico desde CSV (data.csv)</h3>
+            <div id="plotlyChart"><p>Cargando gráfico...</p></div>
+          </div>
+          <div class="card">👥 Usuarios: contenido aquí</div>
+          <div class="card">⚙ Configuración: contenido aquí</div>
+          <div class="card">📦 Inventario: contenido aquí</div>
+        </div>
+
+        <div id="usuarios" class="tab-section" style="display:none;">
+          <h2>Usuarios</h2>
+          <p>Contenido para usuarios.</p>
+        </div>
+
+        <div id="config" class="tab-section" style="display:none;">
+          <h2>Configuración</h2>
+          <p>Contenido de configuración.</p>
+        </div>
+
+        <div id="salir" class="tab-section" style="display:none;">
+          <h2>Salir</h2>
+          <p>Contenido para salir o cerrar sesión.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FontAwesome -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+  <!-- Plotly & PapaParse -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script>
+    // Tabs switching logic
+    const tabs = document.querySelectorAll('.sidebar ul li');
+    const sections = document.querySelectorAll('.tab-section');
+    const headerTitle = document.getElementById('headerTitle');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const target = tab.dataset.tab;
+        headerTitle.textContent = tab.textContent.trim();
+
+        sections.forEach(sec => {
+          if(sec.id === target){
+            sec.style.display = (target === 'dashboard') ? 'grid' : 'block';
+          } else {
+            sec.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Cargar data.csv para plot directamente al cargar la página
+    const plotContainer = document.getElementById('plotlyChart');
+    fetch('data.csv')
+      .then(response => {
+        if (!response.ok) throw new Error('No se pudo cargar data.csv. Usa servidor local o hosting.');
+        return response.text();
+      })
+      .then(csvText => {
+        const parsed = Papa.parse(csvText, {header: true, dynamicTyping: true});
+        const data = parsed.data;
+
+        if(!data.length || !('x' in data[0]) || !('y' in data[0])){
+          plotContainer.innerHTML = '<p>Error: el CSV debe tener columnas "x" y "y".</p>';
+          return;
+        }
+
+        const x = data.map(row => row.x);
+        const y = data.map(row => row.y);
+
+        const trace = {
+          x, y,
+          mode: 'lines+markers',
+          type: 'scatter',
+          marker: {color: 'blue'}
+        };
+
+        const layout = {
+          title: 'Gráfico desde data.csv',
+          margin: { t: 30 }
+        };
+
+        Plotly.newPlot(plotContainer, [trace], layout);
+      })
+      .catch(error => {
+        plotContainer.innerHTML = `<p>Error cargando data.csv:<br>${error.message}</p>`;
+      });
+  </script>
+</body>
+</html>
