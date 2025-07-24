@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Taxonomy Table with Top Filters & Row Click</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+  />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    table.dataTable thead select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    tr.selected {
+      background-color: #d9edf7 !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Taxonomy Table with Top Dropdown Filters & Row Click</h2>
+
+  <table id="taxonomy" class="display" style="width:100%">
+    <thead>
+      <tr>
+        <th>Kingdom</th>
+        <th>Phylum</th>
+        <th>Class</th>
+        <th>Order</th>
+        <th>Family</th>
+        <th>Genus</th>
+        <th>Species</th>
+      </tr>
+      <tr class="filters">
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Animalia</td>
+        <td>Chordata</td>
+        <td>Mammalia</td>
+        <td>Carnivora</td>
+        <td>Canidae</td>
+        <td>Canis</td>
+        <td>Canis lupus</td>
+      </tr>
+      <tr>
+        <td>Animalia</td>
+        <td>Chordata</td>
+        <td>Mammalia</td>
+        <td>Primates</td>
+        <td>Hominidae</td>
+        <td>Homo</td>
+        <td>Homo sapiens</td>
+      </tr>
+      <tr>
+        <td>Animalia</td>
+        <td>Chordata</td>
+        <td>Aves</td>
+        <td>Passeriformes</td>
+        <td>Fringillidae</td>
+        <td>Fringilla</td>
+        <td>Fringilla coelebs</td>
+      </tr>
+      <tr>
+        <td>Plantae</td>
+        <td>Tracheophyta</td>
+        <td>Magnoliopsida</td>
+        <td>Rosales</td>
+        <td>Rosaceae</td>
+        <td>Rosa</td>
+        <td>Rosa canina</td>
+      </tr>
+      <tr>
+        <td>Fungi</td>
+        <td>Basidiomycota</td>
+        <td>Agaricomycetes</td>
+        <td>Agaricales</td>
+        <td>Agaricaceae</td>
+        <td>Agaricus</td>
+        <td>Agaricus bisporus</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      var table = $('#taxonomy').DataTable({
+        orderCellsTop: true,
+        initComplete: function () {
+          var api = this.api();
+
+          // Add the select filters at the top
+          api.columns().every(function () {
+            var column = this;
+            var headerCell = $('.filters th').eq(column.index());
+            var select = $('<select><option value="">All</option></select>')
+              .appendTo(headerCell.empty())
+              .on('change', function () {
+                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                column.search(val ? '^' + val + '$' : '', true, false).draw();
+              });
+
+            column.data()
+              .unique()
+              .sort()
+              .each(function (d) {
+                select.append('<option value="' + d + '">' + d + '</option>');
+              });
+          });
+        },
+      });
+
+      // Handle row click event
+      $('#taxonomy tbody').on('click', 'tr', function () {
+        if ($(this).hasClass('selected')) {
+          $(this).removeClass('selected');
+        } else {
+          table.$('tr.selected').removeClass('selected');
+          $(this).addClass('selected');
+        }
+
+        var rowIndex = table.row(this).index() + 1; // species number (1-based)
+        var speciesName = table.cell(this, 6).data(); // species is 7th column (index 6)
+
+        console.log(`Species #${rowIndex}: ${speciesName}`);
+        alert(`Species #${rowIndex}: ${speciesName}`);
+      });
+    });
+  </script>
+</body>
+</html>

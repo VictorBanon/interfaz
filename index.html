@@ -2,10 +2,126 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard con Tabs</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* Reset y estilos base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f4f6;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: 100vh;
+    }
+    /* Sidebar */
+    .sidebar {
+      background-color: #1f2937;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      margin-bottom: 30px;
+    }
+    .sidebar ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .sidebar li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sidebar li:hover {
+      background-color: #374151;
+    }
+    /* Main */
+    .main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    /* Header */
+    .header {
+      background-color: white;
+      padding: 20px;
+      flex: 0 0 80px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    /* Grid Cards */
+    .card-grid {
+      flex: 1 1 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #111827;
+    }
+    /* --- TABS --- */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      margin-bottom: 15px;
+    }
+    .tab-button {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.3s, color 0.3s;
+      color: #555;
+    }
+    .tab-button:hover {
+      border-bottom-color: #007bff;
+      color: #007bff;
+    }
+    .tab-button.active {
+      border-bottom-color: #007bff;
+      color: #007bff;
+    }
+    .tab-content {
+      flex: 1;
+      display: none;
+      overflow-y: auto;
+      padding-right: 10px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <div class="dashboard">
@@ -27,12 +143,97 @@
       </header>
 
       <section class="card-grid">
-        <div class="card">📊 Estadísticas</div>
+        <!-- TARJETA CON TABS -->
+        <div class="card">
+          <div class="tabs">
+            <button class="tab-button active" data-tab="tab1">Resumen</button>
+            <button class="tab-button" data-tab="tab2">Gráficos</button>
+            <button class="tab-button" data-tab="tab3">Detalles</button>
+          </div>
+          <div class="tab-content active" id="tab1">
+            <p>Aquí tienes un resumen rápido con datos importantes.</p>
+          </div>
+          <div class="tab-content" id="tab2">
+            <p>Se pueden incluir gráficas interactivas o imágenes aquí.</p>
+          </div>
+          <div class="tab-content" id="tab3">
+            <p>Detalles y análisis más profundos de las estadísticas.</p>
+          </div>
+        </div>
+
+        <!-- Otras tarjetas simples -->
         <div class="card">👥 Usuarios</div>
         <div class="card">🛠 Configuración</div>
-        <div class="card">📦 Inventario</div>
+        <!-- NUEVA TARJETA CON 8 DROPDOWNS -->
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">Opciones de Filtro</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <label for="dropdown1">Opción 1</label>
+                <select id="dropdown1"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown2">Opción 2</label>
+                <select id="dropdown2"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown3">Opción 3</label>
+                <select id="dropdown3"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown4">Opción 4</label>
+                <select id="dropdown4"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown5">Opción 5</label>
+                <select id="dropdown5"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown6">Opción 6</label>
+                <select id="dropdown6"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown7">Opción 7</label>
+                <select id="dropdown7"> 
+                </select>
+            </div>
+            <div>
+                <label for="dropdown8">Opción 8</label>
+                <select id="dropdown8"> 
+                </select>
+            </div>
+            </div>
+        </div>
+  
       </section>
     </div>
   </div>
+
+  <script>
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.getAttribute('data-tab');
+
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        tabContents.forEach(content => {
+          content.id === target ? content.classList.add('active') : content.classList.remove('active');
+        });
+      });
+    });
+  </script>
+
+    <!-- Tu script externo para cargar los dropdowns -->
+    <script src="cargarDropdowns.js"></script>
 </body>
 </html>
