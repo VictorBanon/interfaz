@@ -1,3 +1,52 @@
+// first part define initialice function
+//
+// function initialice() {
+//  ... set basic value of all components of the dashboard
+// }
+//
+// second part define update_fonction
+//
+// function upt_plot_1() {
+//  ... update
+// }
+// function upt_plot_2() {
+//  ... set basic value of all components of the dashboard
+// }
+// ... 
+// third part define "action" function (TODO)
+//
+// There is  10 action composant, -> indicate the order of call
+
+// - "All" tab        -> update(ACP)->update(PC1,PC2), update(heatmap)
+// - "Coding" tab     -> update(ACP)->update(PC1,PC2), update(heatmap)
+// - "Non Coding" tab -> update(ACP)->update(PC1,PC2), update(heatmap)
+// - "Taxon" dropdown -> update(ACP)->update(PC1,PC2), update(heatmap)
+// - "VAlue" dropdown -> update(ACP)->update(PC1,PC2), update(heatmap)
+
+// There is no a implementation for HA and HB plot at this moment
+// - "HA" tab  -> update(ACP)->update(PC1,PC2), update(heatmap)
+// - "HB" tab  -> update(ACP)->update(PC1,PC2), update(heatmap)
+// - "HC" tab  -> update(ACP)->update(PC1,PC2), update(heatmap)
+
+// -  table -> update(heatmap)
+//
+// function  {
+//      upt_plot_1()
+//      upt_plot_2()
+//      ...
+// } 
+//  ...
+
+
+// function main() {
+//   initialice();
+//   action_component_1;
+//   ...
+//   action_component_2
+// } 
+
+
+
 // Tab switching logic
 document.querySelectorAll('.card').forEach(card => {
   const buttons = card.querySelectorAll('.tab-button');
@@ -21,11 +70,11 @@ document.querySelectorAll('.card').forEach(card => {
   });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  Papa.parse('data/philogenie/Bacteria/acp_all.csv', {
+document.addEventListener("DOMContentLoaded", function() {
+  Papa.parse('/data/philogenie/Bacteria/acp_all.csv', {
     download: true,
     header: true,
-    complete: function (results) {
+    complete: function(results) {
       const data = results.data;
 
       const xValues = [];
@@ -50,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
         `PC1: ${xValues[i]}<br>` +
         `PC2: ${yValues[i]}<br>` +
         `id: ${idValues[i]}<br>` +
-        `id replicon: ${id_repValues[i]}<br>`  
+        `id replicon: ${id_repValues[i]}<br>`
       );
 
       // Initial plot in plot1_all
@@ -69,24 +118,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Click handler to update plot3
       const plotElement = document.getElementById('plot1_all');
-      plotElement.on('plotly_click', function (eventData) {
+      plotElement.on('plotly_click', function(eventData) {
         const pointIndex = eventData.points[0].pointIndex;
         const clickedRow = pointData[pointIndex];
 
         const id = clickedRow.ID;
         const id_replicon = clickedRow.ID;
-        const name = clickedRow.ID; 
+        const name = clickedRow.ID;
+
+        console.log(`ID1: ${clickedRow.ID}\nReplicon ID: ${id_replicon}`);
 
         const parts = id_replicon.split("_");
         const rebuild_id = parts.slice(1, 4).join("_");
 
         // const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/${id_replicon}_hc_all.csv`;
         const heatmapPath = `/data/${rebuild_id}/analysis/${id_replicon}_hc_all.csv`;
+        // const heatmapPath = "/data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054525.1_ASM1405452v1_hc_all.csv";
+        ///data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054985.1_ASM1405498v1_hc_all.csv
+        console.log(heatmapPath); // Print the contents of a variable
 
         Papa.parse(heatmapPath, {
           download: true,
           dynamicTyping: true,
-          complete: function (heatmapResults) {
+          complete: function(heatmapResults) {
             const rawMatrix = heatmapResults.data;
 
             // Remove empty rows
@@ -109,12 +163,12 @@ document.addEventListener("DOMContentLoaded", function () {
               type: 'heatmap',
               colorscale: 'YlGnBu'
             }], {
-              //title: `Mapa de Calor para "${name}"`,
+              title: `Mapa de Calor para "${name}"`,
               xaxis: { title: 'Columnas' },
               yaxis: { title: 'Filas' }
             });
           },
-          error: function (err) {
+          error: function(err) {
             console.error(`Error loading heatmap for ID ${id}:`, err);
             alert(`No se pudo cargar el heatmap para ID: ${heatmapPath}`);
           }
@@ -124,83 +178,84 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+function add_plots() {
+  Plotly.newPlot('plot1_coding', [{
+    type: 'scatter',
+    mode: 'lines+markers',
+    x: ['HTML', 'CSS', 'JS'],
+    y: [90, 75, 88],
+    line: { color: '#10b981' }
+  }], { title: 'Skills de Programación' });
 
-Plotly.newPlot('plot1_coding', [{
-  type: 'scatter',
-  mode: 'lines+markers',
-  x: ['HTML', 'CSS', 'JS'],
-  y: [90, 75, 88],
-  line: { color: '#10b981' }
-}], { title: 'Skills de Programación' });
+  Plotly.newPlot('plot1_noncoding', [{
+    type: 'scatter',
+    mode: 'lines+markers',
+    x: ['HTML', 'CSS', 'JS'],
+    y: [90, 75, 88],
+    line: { color: '#10b981' }
+  }], { title: 'Skills de Programación' });
 
-Plotly.newPlot('plot1_noncoding',  [{
-  type: 'scatter',
-  mode: 'lines+markers',
-  x: ['HTML', 'CSS', 'JS'],
-  y: [90, 75, 88],
-  line: { color: '#10b981' }
-}], { title: 'Skills de Programación' });
+  Plotly.newPlot('plot2_ha', [{
+    values: [25, 30, 45],
+    labels: ['A', 'B', 'C'],
+    type: 'pie',
+    hole: 0.4
+  }], { title: 'Distribución de Categorías' });
 
-Plotly.newPlot('plot2_ha', [{
-  values: [25, 30, 45],
-  labels: ['A', 'B', 'C'],
-  type: 'pie',
-  hole: 0.4
-}], { title: 'Distribución de Categorías' });
+  Plotly.newPlot('plot2_hb', [{
+    type: 'scatterpolar',
+    r: [39, 28, 30],
+    theta: ['Comunicación', 'Productividad', 'Creatividad'],
+    fill: 'toself'
+  }], { title: 'Radar de Habilidades', polar: { radialaxis: { visible: true } } });
 
-Plotly.newPlot('plot2_hb', [{
-  type: 'scatterpolar',
-  r: [39, 28, 30],
-  theta: ['Comunicación', 'Productividad', 'Creatividad'],
-  fill: 'toself'
-}], { title: 'Radar de Habilidades', polar: { radialaxis: { visible: true } } });
+  Plotly.newPlot('plot2_hc_1', [{
+    z: [
+      [1, 20, 30],
+      [20, 1, 60],
+      [30, 60, 1]
+    ],
+    x: ['Semana 1', 'Semana 2', 'Semana 3'],
+    y: ['HTML', 'CSS', 'JS'],
+    type: 'heatmap',
+    colorscale: 'YlGnBu'
+  }], {
+    title: 'Mapa de Calor de Progreso',
+    xaxis: { title: 'Semana' },
+    yaxis: { title: 'Skill' }
+  });
+  Plotly.newPlot('plot2_hc_2', [{
+    z: [
+      [1, 20, 30],
+      [20, 1, 60],
+      [30, 60, 1]
+    ],
+    x: ['Semana 1', 'Semana 2', 'Semana 3'],
+    y: ['HTML', 'CSS', 'JS'],
+    type: 'heatmap',
+    colorscale: 'YlGnBu'
+  }], {
+    title: 'Mapa de Calor de Progreso',
+    xaxis: { title: 'Semana' },
+    yaxis: { title: 'Skill' }
+  });
 
-Plotly.newPlot('plot2_hc_1', [{
-  z: [
-    [1, 20, 30],
-    [20, 1, 60],
-    [30, 60, 1]
-  ],
-  x: ['Semana 1', 'Semana 2', 'Semana 3'],
-  y: ['HTML', 'CSS', 'JS'],
-  type: 'heatmap',
-  colorscale: 'YlGnBu'
-}], {
-  title: 'Mapa de Calor de Progreso',
-  xaxis: { title: 'Semana' },
-  yaxis: { title: 'Skill' }
-});
-Plotly.newPlot('plot2_hc_2', [{
-  z: [
-    [1, 20, 30],
-    [20, 1, 60],
-    [30, 60, 1]
-  ],
-  x: ['Semana 1', 'Semana 2', 'Semana 3'],
-  y: ['HTML', 'CSS', 'JS'],
-  type: 'heatmap',
-  colorscale: 'YlGnBu'
-}], {
-  title: 'Mapa de Calor de Progreso',
-  xaxis: { title: 'Semana' },
-  yaxis: { title: 'Skill' }
-});
-
-Plotly.newPlot('plot3', [{
-  z: [
-    [1, 20, 30],
-    [20, 1, 60],
-    [30, 60, 1]
-  ],
-  x: ['Semana 1', 'Semana 2', 'Semana 3'],
-  y: ['HTML', 'CSS', 'JS'],
-  type: 'heatmap',
-  colorscale: 'YlGnBu'
-}], {
-  title: 'Mapa de Calor de Progreso',
-  xaxis: { title: 'Semana' },
-  yaxis: { title: 'Skill' }
-});
+  Plotly.newPlot('plot3', [{
+    z: [
+      [1, 20, 30],
+      [20, 1, 60],
+      [30, 60, 1]
+    ],
+    x: ['Semana 1', 'Semana 2', 'Semana 3'],
+    y: ['HTML', 'CSS', 'JS'],
+    type: 'heatmap',
+    colorscale: 'YlGnBu'
+  }], {
+    title: 'Mapa de Calor de Progreso',
+    xaxis: { title: 'Semana' },
+    yaxis: { title: 'Skill' }
+  });
+};
 
 // MutationObserver to resize plots on tab change
 const observer = new MutationObserver(() => {
@@ -212,86 +267,80 @@ document.querySelectorAll('.tab-content').forEach(tab => {
   observer.observe(tab, { attributes: true, attributeFilter: ['class'] });
 });
 
-$(document).ready(function () {
-  $.get('data/taxonomy.csv')
-    .done(function (csvText) {
-      const tableData = parseTaxonomyCSV(csvText);
+// Bottom-right window
+function add_table() {
+  // CSV parsing helper function
+  function parseTaxonomyCSV(csv) {
+    const result = Papa.parse(csv.trim(), { header: true });
+    const rows = result.data;
 
-      const table = $('#taxonomy').DataTable({
-        data: tableData,
-        columns: [
-          { title: 'Kingdom' },
-          { title: 'Phylum' },
-          { title: 'Class' },
-          { title: 'Order' },
-          { title: 'Family' },
-          { title: 'Genus' },
-          { title: 'Species' },
-          { title: 'ID' },
-          { title: 'ID-replicon' },
-        ],
-        orderCellsTop: true,
-        lengthChange: false,
-        info: false,
-        paging: true,
-        pageLength: 5,               // show 5 rows per page
-        scrollY: '50px',
-        scrollCollapse: true,
-        fixedHeader: true,
-        autoWidth: false,            // prevent automatic column width, so no horizontal scroll
-        initComplete: function () {
-        var api = this.api();
+    return rows.map(row => [
+      row.superkingdom || '',
+      row.phylum || '',
+      row.class || '',
+      row.order || '',
+      row.family || '',
+      row.genus || '',
+      row.species || '',
+      row.ID || '',
+      row['ID-replicon'] || ''
+    ]);
+  }
 
-        api.columns().every(function () {
-            var column = this;
-            var select = $('<select><option value="">All</option></select>')
-            .appendTo($('.filters th').eq(column.index()).empty())
-            .on('change', function () {
-                var val = $.fn.dataTable.util.escapeRegex($(this).val());
-                column.search(val ? '^' + val + '$' : '', true, false).draw();
+  $(document).ready(function() {
+    $.get('/data/taxonomy.csv')
+      .done(function(csvText) {
+        const tableData = parseTaxonomyCSV(csvText);
+
+        // console.log("tableData " + tableData);
+
+        $('#taxonomy').DataTable({
+          data: tableData,
+          columns: [
+            { title: 'Kingdom' },
+            { title: 'Phylum' },
+            { title: 'Class' },
+            { title: 'Order' },
+            { title: 'Family' },
+            { title: 'Genus' },
+            { title: 'Species' },
+            { title: 'ID' },
+            { title: 'ID-replicon' },
+          ],
+          orderCellsTop: true,
+          lengthChange: false,
+          info: false,
+          paging: true,
+          pageLength: 5,               // show 5 rows per page
+          scrollY: '50px',
+          scrollCollapse: true,
+          fixedHeader: true,
+          autoWidth: false,            // prevent automatic column width, so no horizontal scroll
+          initComplete: function() {
+            var api = this.api();
+            api.columns().every(function() {
+              var column = this;
+              var select = $('<select><option value="">All</option></select>')
+                .appendTo($('.filters th').eq(column.index()).empty())
+                .on('change', function() {
+                  var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                  column.search(val ? '^' + val + '$' : '', true, false).draw();
+                });
+
+              column.data().unique().sort().each(function(d) {
+                if (d) select.append('<option value="' + d + '">' + d + '</option>');
+              });
             });
-
-            column.data().unique().sort().each(function (d) {
-            if (d) select.append('<option value="' + d + '">' + d + '</option>');
-            });
+          }
         });
-        }
-
       });
-    });
-});
-
-
-// CSV parsing helper function
-function parseTaxonomyCSV(csv) {
-  const lines = csv.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim());
-  const rows = lines.slice(1);
-
-  const colMap = {
-    superkingdom: headers.indexOf('superkingdom'),
-    phylum: headers.indexOf('phylum'),
-    class: headers.indexOf('class'),
-    order: headers.indexOf('order'),
-    family: headers.indexOf('family'),
-    genus: headers.indexOf('genus'),
-    species: headers.indexOf('species'),
-    id: headers.indexOf('ID'),
-    id_replicon: headers.indexOf('ID-replicon'),
-  };
-
-  return rows.map(row => {
-    const cols = row.split(',');
-    return [
-      cols[colMap.superkingdom] || '',
-      cols[colMap.phylum] || '',
-      cols[colMap.class] || '',
-      cols[colMap.order] || '',
-      cols[colMap.family] || '',
-      cols[colMap.genus] || '',
-      cols[colMap.species] || '',
-      cols[colMap.id] || '',
-      cols[colMap.id_replicon] || '',
-    ];
   });
+};
+
+function main() {
+  add_plots();
+  add_table();
 }
+
+main();
+

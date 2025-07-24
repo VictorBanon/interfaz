@@ -40,28 +40,55 @@
     </aside>
 
     <div class="main">
-      <header class="header">
-        <h1>Structural Analysis</h1>
-      </header>
+      <!-- remove headeer <header class="header"> <h1>Structural Analysis</h1> </header>-->
 
       <section class="card-grid">
         <!-- First card with tabs and plots -->
-        <div class="card">
-          <div class="tabs">
+      <div class="card">
+        <!-- Tabs and Dropdowns in one row -->
+        <div class="tab-controls" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+          <!-- Tabs -->
+          <div class="tabs" style="display: flex; gap: 0.5rem;">
             <button class="tab-button active" data-tab="tab1_left">All</button>
             <button class="tab-button" data-tab="tab2_left">Coding</button>
             <button class="tab-button" data-tab="tab3_left">Non Coding</button>
           </div>
-          <div class="tab-content active" id="tab1_left">
-            <div id="plot1_all" style="width:100%;height:100%;"></div>
-          </div>
-          <div class="tab-content" id="tab2_left">
-            <div id="plot1_coding" style="width:100%;height:100%;"></div>
-          </div>
-          <div class="tab-content" id="tab3_left">
-            <div id="plot1_noncoding" style="width:100%;height:100%;"></div>
+
+          <!-- Dropdowns -->
+          <div class="dropdowns" style="display: flex; gap: 1rem;">
+            <label>
+              Taxon:
+              <select id="categoryDropdown">
+                <option value="all">All</option>
+                <option value="coding">Coding</option>
+                <option value="noncoding">Non Coding</option>
+              </select>
+            </label>
+
+            <label>
+              Value:
+              <select id="filterDropdown">
+                <option value="recent">Recent</option>
+                <option value="popular">Popular</option>
+                <option value="trending">Trending</option>
+              </select>
+            </label>
           </div>
         </div>
+
+        <!-- Tab Contents -->
+        <div class="tab-content active" id="tab1_left">
+          <div id="plot1_all" style="width:100%;height:100%;"></div>
+        </div>
+        <div class="tab-content" id="tab2_left">
+          <div id="plot1_coding" style="width:100%;height:100%;"></div>
+        </div>
+        <div class="tab-content" id="tab3_left">
+          <div id="plot1_noncoding" style="width:100%;height:100%;"></div>
+        </div>
+      </div>
+
+
 
         <!-- Second card with tabs and plots -->
         <div class="card">

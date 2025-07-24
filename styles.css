@@ -49,18 +49,17 @@ html, body {
 .sidebar li:hover {
   background-color: #374151;
 }
-/* botton sidebar */  
+/* Bottom sidebar */  
 .bottom-card {
-  /* This will stick the card to the bottom */
   padding: 15px;
-  border-radius: 12px; /* rounded corners */
+  border-radius: 12px;
   text-align: center;
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
   background-color: #354152;
   position: absolute;
-  bottom: 20px; /* matches sidebar padding */
-  left: 20px;   /* matches sidebar padding */
-  right: 20px;  
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
 }
 
 /* Main area */
@@ -87,7 +86,7 @@ html, body {
   grid-template-rows: 1fr 1fr;
   gap: 20px;
   padding: 20px;
-  height: 90%; /* fill height */
+  height: 90%;
 }
 .card {
   background-color: white;
@@ -99,7 +98,7 @@ html, body {
   font-size: 1.1rem;
   font-weight: 500;
   color: #111827;
-  height: 100%; /* fill grid cell */
+  height: 100%;
   overflow: hidden;
 }
 
@@ -107,7 +106,6 @@ html, body {
 .tabs {
   display: flex;
   border-bottom: 2px solid #ccc;
-  margin-bottom: 15px;
 }
 .tab-button {
   padding: 10px 20px;
@@ -139,78 +137,86 @@ html, body {
   display: block;
 }
 
-/* DataTables styling */
+/* Tab controls row (tabs + dropdowns) */
+.tab-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
 
-/* Filters row above header */
+/* Dropdown labels */
+.tab-controls label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Style dropdowns to match tab height */
+.tab-controls select {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  height: 40px; /* Matches tab-button height */
+  margin-left: 6px;
+  appearance: none;
+  background-color: white;
+  line-height: 1;
+}
+
+/* DataTables styling */
 #taxonomy thead tr.filters th {
   padding: 4px 6px !important;
   border-bottom: none !important;
   background: transparent !important;
 }
-
-/* Table header row styling */
 #taxonomy thead tr:nth-child(2) th {
   padding: 6px 8px !important;
   border-bottom: 1px solid #ddd;
   background: #fafafa;
 }
-
-/* Filter selects full width and smaller font */
 table.dataTable thead select {
   width: 100%;
   box-sizing: border-box;
   font-size: 10px;
   padding: 2px 4px;
 }
-
-/* Highlight selected rows */
 tr.selected {
   background-color: #d9edf7 !important;
 }
-
-/* Hide length changer and info text, keep pagination */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_info {
   display: none;
 }
-
-/* Container of the table */
 #taxonomy_wrapper {
-  font-size: 9px !important; /* smaller font */
-  margin-bottom: 10px !important; /* smaller margin so pagination visible */
+  font-size: 9px !important;
+  margin-bottom: 10px !important;
   flex: 1 1 auto;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
-
-/* Table headers and cells */
 #taxonomy thead th,
 #taxonomy tbody td {
-  font-size: 10px !important; /* smaller font */
-  white-space: nowrap; /* prevent wrapping */
+  font-size: 10px !important;
+  white-space: nowrap;
   padding: 6px 8px !important;
 }
-
-/* Table body cells vertical padding smaller */
 #taxonomy tbody td {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
 }
-
-/* Scroll body vertical scroll only, hide horizontal scroll */
 .dataTables_scrollBody {
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  max-height: calc(100% - 40px) !important; /* leave room for pagination */
+  max-height: calc(100% - 40px) !important;
 }
-
-/* Pagination bar styling */
 .dataTables_wrapper .dataTables_paginate {
   padding-top: 6px;
   font-size: 10px;
   text-align: right;
   background: white;
 }
-
-
