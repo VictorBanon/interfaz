@@ -21,12 +21,108 @@ document.querySelectorAll('.card').forEach(card => {
   });
 });
 
-// Plotly graphs initialization (your existing graphs)
-Plotly.newPlot('plot1_all', [{
-  x: ['Ene', 'Feb', 'Mar'],
-  y: [20, 14, 23],
-  type: 'bar'
-}], { title: 'Ventas Mensuales' });
+document.addEventListener("DOMContentLoaded", function () {
+  Papa.parse('/data/philogenie/Bacteria/acp_all.csv', {
+    download: true,
+    header: true,
+    complete: function (results) {
+      const data = results.data;
+
+      const xValues = [];
+      const yValues = [];
+      const idValues = [];
+      const id_repValues = [];
+
+      // Store full data so we can access the clicked point's data later
+      const pointData = [];
+
+      data.forEach(row => {
+        if (row.PC1 && row.PC2) {
+          xValues.push(parseFloat(row.PC1));
+          yValues.push(parseFloat(row.PC2));
+          idValues.push(row.ID || '');
+          id_repValues.push(row.ID || '');
+          pointData.push(row);
+        }
+      });
+
+      const hoverLabels = xValues.map((_, i) =>
+        `PC1: ${xValues[i]}<br>` +
+        `PC2: ${yValues[i]}<br>` +
+        `id: ${idValues[i]}<br>` +
+        `id replicon: ${id_repValues[i]}<br>`  
+      );
+
+      // Initial plot in plot1_all
+      Plotly.newPlot('plot1_all', [{
+        type: 'scatter',
+        mode: 'markers',
+        x: xValues,
+        y: yValues,
+        text: hoverLabels,
+        hoverinfo: 'text',
+        marker: { size: 10 },
+        line: { color: '#10b981' }
+      }], {
+        title: 'ACP All CSV Plot'
+      });
+
+      // Click handler to update plot3
+      const plotElement = document.getElementById('plot1_all');
+      plotElement.on('plotly_click', function (eventData) {
+        const pointIndex = eventData.points[0].pointIndex;
+        const clickedRow = pointData[pointIndex];
+
+        const id = clickedRow.ID;
+        const id_replicon = clickedRow.ID;
+        const name = clickedRow.id; 
+
+        //const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/${id_replicon}_hc_all.csv`;
+        const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054525.1_ASM1405452v1_hc_all.csv`;
+        
+        console.log(heatmapPath); // Print the contents of a variable
+
+        Papa.parse(heatmapPath, {
+          download: true,
+          dynamicTyping: true,
+          complete: function (heatmapResults) {
+            const rawMatrix = heatmapResults.data;
+
+            // Remove empty rows
+            const matrix = rawMatrix.filter(row => row.length > 0);
+
+            // Extract x-axis labels from the first row, skipping the top-left corner cell
+            const xLabels = matrix[0].slice(1);
+
+            // Extract y-axis labels from the first column (excluding the first row)
+            const yLabels = matrix.slice(1).map(row => row[0]);
+
+            // Extract z matrix: everything except the first row and first column
+            const z = matrix.slice(1).map(row => row.slice(1));
+
+            // Plot
+            Plotly.newPlot('plot3', [{
+              z: z,
+              x: xLabels,
+              y: yLabels,
+              type: 'heatmap',
+              colorscale: 'YlGnBu'
+            }], {
+              title: `Mapa de Calor para "${name}"`,
+              xaxis: { title: 'Columnas' },
+              yaxis: { title: 'Filas' }
+            });
+          },
+          error: function (err) {
+            console.error(`Error loading heatmap for ID ${id}:`, err);
+            alert(`No se pudo cargar el heatmap para ID: ${id}`);
+          }
+        });
+      });
+    }
+  });
+});
+
 
 Plotly.newPlot('plot1_coding', [{
   type: 'scatter',
@@ -36,11 +132,13 @@ Plotly.newPlot('plot1_coding', [{
   line: { color: '#10b981' }
 }], { title: 'Skills de Programación' });
 
-Plotly.newPlot('plot1_noncoding', [{
-  values: [30, 50, 20],
-  labels: ['Gestión', 'Comunicación', 'Creatividad'],
-  type: 'pie'
-}], { title: 'Habilidades Blandas' });
+Plotly.newPlot('plot1_noncoding',  [{
+  type: 'scatter',
+  mode: 'lines+markers',
+  x: ['HTML', 'CSS', 'JS'],
+  y: [90, 75, 88],
+  line: { color: '#10b981' }
+}], { title: 'Skills de Programación' });
 
 Plotly.newPlot('plot2_ha', [{
   values: [25, 30, 45],
@@ -56,11 +154,36 @@ Plotly.newPlot('plot2_hb', [{
   fill: 'toself'
 }], { title: 'Radar de Habilidades', polar: { radialaxis: { visible: true } } });
 
-Plotly.newPlot('plot2_hc', [{
-  r: [3, 6, 8, 5],
-  theta: ['DB', 'API', 'Frontend', 'Backend'],
-  type: 'barpolar'
-}], { title: 'Stack Tecnológico' });
+Plotly.newPlot('plot2_hc_1', [{
+  z: [
+    [1, 20, 30],
+    [20, 1, 60],
+    [30, 60, 1]
+  ],
+  x: ['Semana 1', 'Semana 2', 'Semana 3'],
+  y: ['HTML', 'CSS', 'JS'],
+  type: 'heatmap',
+  colorscale: 'YlGnBu'
+}], {
+  title: 'Mapa de Calor de Progreso',
+  xaxis: { title: 'Semana' },
+  yaxis: { title: 'Skill' }
+});
+Plotly.newPlot('plot2_hc_2', [{
+  z: [
+    [1, 20, 30],
+    [20, 1, 60],
+    [30, 60, 1]
+  ],
+  x: ['Semana 1', 'Semana 2', 'Semana 3'],
+  y: ['HTML', 'CSS', 'JS'],
+  type: 'heatmap',
+  colorscale: 'YlGnBu'
+}], {
+  title: 'Mapa de Calor de Progreso',
+  xaxis: { title: 'Semana' },
+  yaxis: { title: 'Skill' }
+});
 
 Plotly.newPlot('plot3', [{
   z: [
@@ -103,6 +226,8 @@ $(document).ready(function () {
           { title: 'Family' },
           { title: 'Genus' },
           { title: 'Species' },
+          { title: 'ID' },
+          { title: 'ID-replicon' },
         ],
         orderCellsTop: true,
         lengthChange: false,
@@ -150,6 +275,8 @@ function parseTaxonomyCSV(csv) {
     family: headers.indexOf('family'),
     genus: headers.indexOf('genus'),
     species: headers.indexOf('species'),
+    id: headers.indexOf('id'),
+    id_replicon: headers.indexOf('id_replicon'),
   };
 
   return rows.map(row => {
@@ -162,6 +289,8 @@ function parseTaxonomyCSV(csv) {
       cols[colMap.family] || '',
       cols[colMap.genus] || '',
       cols[colMap.species] || '',
+      cols[colMap.id] || '',
+      cols[colMap.id_replicon] || '',
     ];
   });
 }
