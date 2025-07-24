@@ -63,12 +63,20 @@ Plotly.newPlot('plot2_hc', [{
 }], { title: 'Stack Tecnológico' });
 
 Plotly.newPlot('plot3', [{
+  z: [
+    [1, 20, 30],
+    [20, 1, 60],
+    [30, 60, 1]
+  ],
   x: ['Semana 1', 'Semana 2', 'Semana 3'],
-  y: [40, 60, 80],
-  type: 'scatter',
-  mode: 'lines+markers',
-  line: { shape: 'spline' }
-}], { title: 'Progreso Individual' });
+  y: ['HTML', 'CSS', 'JS'],
+  type: 'heatmap',
+  colorscale: 'YlGnBu'
+}], {
+  title: 'Mapa de Calor de Progreso',
+  xaxis: { title: 'Semana' },
+  yaxis: { title: 'Skill' }
+});
 
 // MutationObserver to resize plots on tab change
 const observer = new MutationObserver(() => {
