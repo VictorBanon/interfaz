@@ -212,7 +212,7 @@ document.querySelectorAll('.tab-content').forEach(tab => {
 });
 
 $(document).ready(function () {
-  $.get('taxonomy.csv')
+  $.get('/data/taxonomy.csv')
     .done(function (csvText) {
       const tableData = parseTaxonomyCSV(csvText);
 
