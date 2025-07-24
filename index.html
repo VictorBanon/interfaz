@@ -3,237 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard con Tabs</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    /* Reset y estilos base */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f3f4f6;
-    }
-    .dashboard {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      height: 100vh;
-    }
-    /* Sidebar */
-    .sidebar {
-      background-color: #1f2937;
-      color: white;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar h2 {
-      margin-bottom: 30px;
-    }
-    .sidebar ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .sidebar li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .sidebar li:hover {
-      background-color: #374151;
-    }
-    /* Main */
-    .main {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-    /* Header */
-    .header {
-      background-color: white;
-      padding: 20px;
-      flex: 0 0 80px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    /* Grid Cards */
-    .card-grid {
-      flex: 1 1 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 20px;
-      padding: 20px;
-    }
-    .card {
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #111827;
-    }
-    /* --- TABS --- */
-    .tabs {
-      display: flex;
-      border-bottom: 2px solid #ccc;
-      margin-bottom: 15px;
-    }
-    .tab-button {
-      padding: 10px 20px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-weight: 600;
-      border-bottom: 3px solid transparent;
-      transition: border-color 0.3s, color 0.3s;
-      color: #555;
-    }
-    .tab-button:hover {
-      border-bottom-color: #007bff;
-      color: #007bff;
-    }
-    .tab-button.active {
-      border-bottom-color: #007bff;
-      color: #007bff;
-    }
-    .tab-content {
-      flex: 1;
-      display: none;
-      overflow-y: auto;
-      padding-right: 10px;
-      font-size: 0.95rem;
-      color: #333;
-    }
-    .tab-content.active {
-      display: block;
-    }
-  </style>
+  <title>IR Dashboard</title>
+
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <!-- FontAwesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
+  <!-- DataTables CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+  />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="dashboard">
     <aside class="sidebar">
-      <h2>MiPanel</h2>
+      <h2>IR systematic study</h2>
       <nav>
         <ul>
-          <li><i class="fas fa-chart-line"></i> Dashboard</li>
-          <li><i class="fas fa-users"></i> Usuarios</li>
-          <li><i class="fas fa-cog"></i> Configuración</li>
-          <li><i class="fas fa-sign-out-alt"></i> Salir</li>
+          <li><i class="fas fa-chart-line"></i> Introduction</li>
+          <li><i class="fas fa-chart-line"></i> Strutural Analysis</li>
+          <li><i class="fas fa-chart-line"></i> Kmer Analysis</li> 
         </ul>
+        <div class="bottom-card">
+          This card is at the bottom of the sidebar
+        </div>
       </nav>
     </aside>
 
     <div class="main">
       <header class="header">
-        <h1>Bienvenido</h1>
+        <h1>Structural Analysis</h1>
       </header>
 
       <section class="card-grid">
-        <!-- TARJETA CON TABS -->
+        <!-- First card with tabs and plots -->
         <div class="card">
           <div class="tabs">
-            <button class="tab-button active" data-tab="tab1">Resumen</button>
-            <button class="tab-button" data-tab="tab2">Gráficos</button>
-            <button class="tab-button" data-tab="tab3">Detalles</button>
+            <button class="tab-button active" data-tab="tab1_left">All</button>
+            <button class="tab-button" data-tab="tab2_left">Coding</button>
+            <button class="tab-button" data-tab="tab3_left">Non Coding</button>
           </div>
-          <div class="tab-content active" id="tab1">
-            <p>Aquí tienes un resumen rápido con datos importantes.</p>
+          <div class="tab-content active" id="tab1_left">
+            <div id="plot1_all" style="width:100%;height:250px;"></div>
           </div>
-          <div class="tab-content" id="tab2">
-            <p>Se pueden incluir gráficas interactivas o imágenes aquí.</p>
+          <div class="tab-content" id="tab2_left">
+            <div id="plot1_coding" style="width:100%;height:250px;"></div>
           </div>
-          <div class="tab-content" id="tab3">
-            <p>Detalles y análisis más profundos de las estadísticas.</p>
+          <div class="tab-content" id="tab3_left">
+            <div id="plot1_noncoding" style="width:100%;height:250px;"></div>
           </div>
         </div>
 
-        <!-- Otras tarjetas simples -->
-        <div class="card">👥 Usuarios</div>
-        <div class="card">🛠 Configuración</div>
-        <!-- NUEVA TARJETA CON 8 DROPDOWNS -->
+        <!-- Second card with tabs and plots -->
         <div class="card">
-            <h3 style="margin-bottom: 15px;">Opciones de Filtro</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div>
-                <label for="dropdown1">Opción 1</label>
-                <select id="dropdown1"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown2">Opción 2</label>
-                <select id="dropdown2"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown3">Opción 3</label>
-                <select id="dropdown3"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown4">Opción 4</label>
-                <select id="dropdown4"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown5">Opción 5</label>
-                <select id="dropdown5"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown6">Opción 6</label>
-                <select id="dropdown6"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown7">Opción 7</label>
-                <select id="dropdown7"> 
-                </select>
-            </div>
-            <div>
-                <label for="dropdown8">Opción 8</label>
-                <select id="dropdown8"> 
-                </select>
-            </div>
-            </div>
+          <div class="tabs">
+            <button class="tab-button active" data-tab="tab1_right">HA</button>
+            <button class="tab-button" data-tab="tab2_right">HB</button>
+            <button class="tab-button" data-tab="tab3_right">HC</button>
+          </div>
+          <div class="tab-content active" id="tab1_right">
+            <div id="plot2_ha" style="width:100%;height:250px;"></div>
+          </div>
+          <div class="tab-content" id="tab2_right">
+            <div id="plot2_hb" style="width:100%;height:250px;"></div>
+          </div>
+          <div class="tab-content" id="tab3_right">
+            <div id="plot2_hc" style="width:100%;height:250px;"></div>
+          </div>
         </div>
-  
+
+        <!-- Third card with single plot -->
+        <div class="card">
+          <div class="tabs">
+            <button class="tab-button active" data-tab="tab_botton_1">Individual:</button>  
+          </div>
+          <div class="tab-content active" id="tab_botton_1">
+            <div id="plot3" style="width:100%;height:250px;"></div>
+          </div>  
+        </div>
+
+        <!-- Fourth card with taxonomy table -->
+        <div class="card"> 
+          <table id="taxonomy" class="display" style="width:100%">
+            <thead>
+              <tr class="filters">
+                <th></th><th></th><th></th><th></th><th></th><th></th><th></th>
+              </tr>
+              <tr>
+                <th>Kingdom</th>
+                <th>Phylum</th>
+                <th>Class</th>
+                <th>Order</th>
+                <th>Family</th>
+                <th>Genus</th>
+                <th>Species</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <!-- Filled dynamically -->
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   </div>
 
-  <script>
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const target = button.getAttribute('data-tab');
-
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        tabContents.forEach(content => {
-          content.id === target ? content.classList.add('active') : content.classList.remove('active');
-        });
-      });
-    });
-  </script>
-
-    <!-- Tu script externo para cargar los dropdowns -->
-    <script src="cargarDropdowns.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <!-- Custom JS -->
+  <script src="scripts.js"></script>
 </body>
 </html>
