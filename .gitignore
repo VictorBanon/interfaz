@@ -3,3 +3,6 @@ venv/
 source/_static/
 source/data
 __pycache__
+Gemfile
+Gemfile.lock
+_site
