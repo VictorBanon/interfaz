@@ -77,10 +77,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const id_replicon = clickedRow.ID;
         const name = clickedRow.ID; 
 
-        //const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/${id_replicon}_hc_all.csv`;
-        const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054525.1_ASM1405452v1_hc_all.csv`;
-                           ///data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054985.1_ASM1405498v1_hc_all.csv
-        console.log(heatmapPath); // Print the contents of a variable
+        const parts = id_replicon.split("_");
+        const rebuild_id = parts.slice(1, 4).join("_");
+
+        // const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/${id_replicon}_hc_all.csv`;
+        const heatmapPath = `/data/${rebuild_id}/analysis/${id_replicon}_hc_all.csv`;
 
         Papa.parse(heatmapPath, {
           download: true,
@@ -108,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
               type: 'heatmap',
               colorscale: 'YlGnBu'
             }], {
-              title: `Mapa de Calor para "${name}"`,
+              //title: `Mapa de Calor para "${name}"`,
               xaxis: { title: 'Columnas' },
               yaxis: { title: 'Filas' }
             });
@@ -212,7 +213,7 @@ document.querySelectorAll('.tab-content').forEach(tab => {
 });
 
 $(document).ready(function () {
-  $.get('/data/taxonomy.csv')
+  $.get('data/taxonomy.csv')
     .done(function (csvText) {
       const tableData = parseTaxonomyCSV(csvText);
 
