@@ -21,7 +21,12 @@ document.querySelectorAll('.card').forEach(card => {
   });
 });
 
-document.addEventListener("DOMContentLoaded", function() {
+function buildMainSection(regionCSVPath) {
+  const randomColor = () => {
+    const randomHex = Math.floor(Math.random() * 0xffffff).toString(16);
+    return `#${randomHex.padStart(6, '0')}`;
+  };
+
   function onComplete(results) {
     const xValues = [];
     const yValues = [];
@@ -49,7 +54,8 @@ document.addEventListener("DOMContentLoaded", function() {
       text: hoverLabels,
       hoverinfo: 'text',
       marker: { size: 10 },
-      line: { color: '#10b981' }
+      // line: { color: '#10b981' }
+      line: { color: randomColor() }
     }], {
       title: 'ACP All CSV Plot'
     });
@@ -91,11 +97,25 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   };
 
-  Papa.parse(ACP_ALL_PATH, {
+  Papa.parse(regionCSVPath, {
     download: true,
     header: true,
     complete: onComplete,
   });
+};
+
+// Update main plot on Taxon category section
+document.getElementById('categoryDropdown').addEventListener('change', function() {
+  const taxonValue = this.value; // "all" | "coding" | "noncoding"
+  console.log('Selected value:', taxonValue);
+  function getPathFromTaxonValue(taxonValue) {
+    return ACP_ALL_PATH; // IMPLEMENT ME BRO!
+  }
+  buildMainSection(getPathFromTaxonValue(taxonValue));
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+  buildMainSection(ACP_ALL_PATH);
 });
 
 function add_plot1() {
