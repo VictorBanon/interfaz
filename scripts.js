@@ -75,7 +75,7 @@ function buildMainSection(regionCSVPath) {
 
   console.log("Levels before", categoryValue, "are:", levelsBefore);
  
-  const csv_acp = `${window.baseurl}/data/philogenie/${pathArray.join("/")}/acp_${tabLeftValue}.csv`;
+  const csv_acp = `./dataphilogenie/${pathArray.join("/")}/acp_${tabLeftValue}.csv`;
   console.log('filterValue:',csv_acp);
 
   Papa.parse(csv_acp, {
@@ -115,7 +115,7 @@ function buildMainSection(regionCSVPath) {
         const id = id_replicon.split('_').slice(1, 4).join('_');
         const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
 
-        const heatmapPath = `${window.baseurl}/data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
+        const heatmapPath = `./data${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
         Papa.parse(heatmapPath, {
           download: true,
@@ -137,7 +137,7 @@ function buildMainSection(regionCSVPath) {
     }
   });
 
-  const csv_acp_1 = `${window.baseurl}/data/philogenie/${pathArray.join("/")}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+  const csv_acp_1 = `./dataphilogenie/${pathArray.join("/")}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
   Papa.parse(csv_acp_1, {
     download: true,
@@ -171,7 +171,7 @@ function buildMainSection(regionCSVPath) {
     }
   });
 
-  const csv_acp_2 = `${window.baseurl}/data/philogenie/${pathArray.join("/")}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+  const csv_acp_2 = `./dataphilogenie/${pathArray.join("/")}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
 
   Papa.parse(csv_acp_2, {
@@ -377,7 +377,7 @@ function add_table() {
   }
 
   $(document).ready(function () {
-    $.get(`${window.baseurl}/data/taxonomy.csv`)
+    $.get(`./datataxonomy.csv`)
       .done(function (csvText) {
         const tableData = parseTaxonomyCSV(csvText);
         const table = $('#taxonomy').DataTable({
@@ -421,7 +421,7 @@ function add_table() {
           const id_replicon = rowData[8];
           const id = rowData[7];
           const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections(); 
-          const heatmapPath = `${window.baseurl}/data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
+          const heatmapPath = `./data${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
           Papa.parse(heatmapPath, {
             download: true,
@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
-  fetch(`${window.baseurl}/data/taxonomy_values.json`)
+  fetch(`./datataxonomy_values.json`)
     .then(response => response.json())
     .then(data => {
       const taxonKeys = Object.keys(data);
