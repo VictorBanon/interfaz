@@ -22,7 +22,7 @@ document.querySelectorAll('.card').forEach(card => {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  Papa.parse('/data/philogenie/Bacteria/acp_all.csv', {
+  Papa.parse('data/philogenie/Bacteria/acp_all.csv', {
     download: true,
     header: true,
     complete: function (results) {
