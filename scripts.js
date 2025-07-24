@@ -377,7 +377,7 @@ function add_table() {
   }
 
   $(document).ready(function () {
-    $.get(`./datataxonomy.csv`)
+    $.get(`./data/taxonomy.csv`)
       .done(function (csvText) {
         const tableData = parseTaxonomyCSV(csvText);
         const table = $('#taxonomy').DataTable({
@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
-  fetch(`./taxonomy_values.json`)  // <-- corregí la ruta aquí
+  fetch(`./data/taxonomy_values.json`)  // <-- corregí la ruta aquí
     .then(response => {
       if (!response.ok) {
         throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
