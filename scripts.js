@@ -459,12 +459,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
-  fetch(`./datataxonomy_values.json`)
-    .then(response => response.json())
+  fetch(`./taxonomy_values.json`)  // <-- corregí la ruta aquí
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then(data => {
       const taxonKeys = Object.keys(data);
 
-      // Populate categoryDropdown
+      // Poblamos categoryDropdown
       categoryDropdown.innerHTML = '';
       for (const taxon of taxonKeys) {
         const option = document.createElement("option");
@@ -473,10 +478,10 @@ document.addEventListener("DOMContentLoaded", function () {
         categoryDropdown.appendChild(option);
       }
 
-      // ✅ FIRST: Register the change event
+      // Evento change para categoryDropdown
       categoryDropdown.addEventListener("change", function () {
         const selectedTaxon = categoryDropdown.value;
-        filterDropdown.innerHTML = ""; // Clear current options
+        filterDropdown.innerHTML = ""; // Limpiamos opciones anteriores
 
         if (data[selectedTaxon]) {
           const values = data[selectedTaxon];
@@ -488,7 +493,7 @@ document.addEventListener("DOMContentLoaded", function () {
             filterDropdown.appendChild(option);
           });
 
-          // Auto-select logic
+          // Auto-selección si hay 1 o más opciones
           if (values.length === 1) {
             filterDropdown.value = values[0];
             filterDropdown.dispatchEvent(new Event("change"));
@@ -498,7 +503,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // ✅ THEN: trigger initial change
+      // Disparar el cambio inicial para cargar el primer conjunto de filtros
       if (taxonKeys.length > 0) {
         categoryDropdown.value = taxonKeys[0];
         categoryDropdown.dispatchEvent(new Event('change'));
@@ -506,9 +511,10 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(err => {
       console.error("Error loading taxonomy_values.json:", err);
-      alert("Failed to load taxonomic options.");
+      alert("No se pudo cargar el archivo taxonomy_values.json.");
     });
 });
+
 
 
 
