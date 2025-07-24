@@ -1,0 +1,46 @@
+{
+  "superkingdom": [
+    "Bacteria"
+  ],
+  "phylum": [
+    "Proteobacteria"
+  ],
+  "class": [
+    "Betaproteobacteria"
+  ],
+  "order": [
+    "Neisseriales",
+    "Burkholderiales",
+    "Nitrosomonadales",
+    "Ferrovales"
+  ],
+  "family": [
+    "Neisseriaceae",
+    "Burkholderiaceae",
+    "Nitrosomonadaceae",
+    "Ferrovaceae"
+  ],
+  "genus": [
+    "Simonsiella",
+    "Kingella",
+    "Alysiella",
+    "Paralysiella",
+    "Uruburuella",
+    "Morococcus",
+    "Burkholderia",
+    "Nitrosomonas",
+    "Ferrovum"
+  ],
+  "species": [
+    "Simonsiella muelleri",
+    "Kingella oralis",
+    "Alysiella filiformis",
+    "Neisseriaceae bacterium CCUG 44465",
+    "Paralysiella testudinis",
+    "Uruburuella suis",
+    "Morococcus cerebrosus",
+    "Burkholderia cenocepacia",
+    "Nitrosomonas europaea",
+    "Ferrovum myxofaciens"
+  ]
+}
