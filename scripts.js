@@ -75,11 +75,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const id = clickedRow.ID;
         const id_replicon = clickedRow.ID;
-        const name = clickedRow.id; 
+        const name = clickedRow.ID; 
 
         //const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/${id_replicon}_hc_all.csv`;
         const heatmapPath = `/data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054525.1_ASM1405452v1_hc_all.csv`;
-        
+                           ///data/GCF_014054525.1_ASM1405452v1/analysis/chromosome_GCF_014054985.1_ASM1405498v1_hc_all.csv
         console.log(heatmapPath); // Print the contents of a variable
 
         Papa.parse(heatmapPath, {
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           error: function (err) {
             console.error(`Error loading heatmap for ID ${id}:`, err);
-            alert(`No se pudo cargar el heatmap para ID: ${id}`);
+            alert(`No se pudo cargar el heatmap para ID: ${heatmapPath}`);
           }
         });
       });
@@ -275,8 +275,8 @@ function parseTaxonomyCSV(csv) {
     family: headers.indexOf('family'),
     genus: headers.indexOf('genus'),
     species: headers.indexOf('species'),
-    id: headers.indexOf('id'),
-    id_replicon: headers.indexOf('id_replicon'),
+    id: headers.indexOf('ID'),
+    id_replicon: headers.indexOf('ID-replicon'),
   };
 
   return rows.map(row => {
