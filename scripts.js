@@ -420,8 +420,9 @@ function add_table() {
 
           const id_replicon = rowData[8];
           const id = rowData[7];
-          const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections(); 
-          const heatmapPath = `./data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
+          const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
+          const dataDir = './data/'; 
+          const heatmapPath = `${dataDir}${String(id)}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
           Papa.parse(heatmapPath, {
             download: true,
