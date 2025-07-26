@@ -100,8 +100,27 @@ function buildMainSection(regionCSVPath) {
         hoverinfo: 'text',
         marker: { size: 10 }
       }], {
-        title: 'ACP'
-      });
+        title: 'ACP',
+        margin: {
+          l: 0, // left margin
+          r: 0, // right margin
+          t: 30, // top margin (can be >0 to fit title)
+          b: 0  // bottom margin
+        },
+        autosize: true,
+        xaxis: {
+          automargin: false,
+          title: '',
+          zeroline: true
+        },
+        yaxis: {
+          automargin: false,
+          title: '',
+          zeroline: true
+        }
+      }, {
+        responsive: true
+      }); 
 
       // Add click handler to update plot3
       document.getElementById('plot1').on('plotly_click', function(eventData) {
