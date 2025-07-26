@@ -1,36 +1,30 @@
-// === CARD 1 ===
 const card1 = document.getElementById('card_1');
-const buttons = card1.querySelectorAll('.tab-button');  
+const tabButton1 = card1.querySelectorAll('.tab-button');
+const card2 = document.getElementById('card_2');
+const tabButton2 = card2.querySelectorAll('.tab-button');
 
 // Tab click listeners
-buttons.forEach(button => {
+tabButton1.forEach(button => {
   button.addEventListener('click', () => {
     const target = button.getAttribute('data-tab');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active'); 
+    tabButton1.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
   });
 });
 
-// === CARD 2 ===
-const card2 = document.getElementById('card_2');
-const buttons2 = card2.querySelectorAll('.tab-button'); 
-
 // Tab click listeners
-buttons2.forEach(button => {
+tabButton2.forEach(button => {
   button.addEventListener('click', () => {
     const target = button.getAttribute('data-tab');
-    buttons2.forEach(btn => btn.classList.remove('active'));
+    tabButton2.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
     updatePlotCard2(target);
   });
-}); 
+});
 
 // === MAIN ACP SCATTER PLOT ===
-function buildMainSection(regionCSVPath) { 
-
+function buildMainSection(regionCSVPath) {
   const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
- 
-  
   const folderTree = {
     "Bacteria": {
       "Proteobacteria": {
@@ -50,7 +44,7 @@ function buildMainSection(regionCSVPath) {
           "Nitrosomonadales": {}
         }
       }
-    } 
+    }
   };
 
   const pathArray = findFilePath(folderTree, filterValue);
@@ -58,7 +52,7 @@ function buildMainSection(regionCSVPath) {
     console.log('Path:', pathArray.join('/'));  // ➜ root/folderA/subfolder1/file1.csv
   } else {
     console.log('File not found.');
-  } 
+  }
   const taxonomicOrder = [
     "superkingdom",
     "phylum",
@@ -68,20 +62,20 @@ function buildMainSection(regionCSVPath) {
     "genus",
     "species"
   ];
+
   // Get all levels before the selected one
   const index = taxonomicOrder.indexOf(categoryValue);
-
   const levelsBefore = index > 0 ? taxonomicOrder.slice(0, index) : [];
 
   console.log("Levels before", categoryValue, "are:", levelsBefore);
- 
+
   const csv_acp = `./data/philogenie/${pathArray.join("/")}/acp_${tabLeftValue}.csv`;
-  console.log('filterValue:',csv_acp);
+  console.log('filterValue:', csv_acp);
 
   Papa.parse(csv_acp, {
     download: true,
     header: true,
-    complete: function (results) {
+    complete: function(results) {
       const xValues = [];
       const yValues = [];
       const pointData = [];
@@ -103,13 +97,13 @@ function buildMainSection(regionCSVPath) {
         y: yValues,
         text: hoverLabels,
         hoverinfo: 'text',
-        marker: { size: 10}
+        marker: { size: 10 }
       }], {
         title: 'ACP'
       });
 
       // Add click handler to update plot3
-      document.getElementById('plot1').on('plotly_click', function (eventData) {
+      document.getElementById('plot1').on('plotly_click', function(eventData) {
         const clickedRow = pointData[eventData.points[0].pointIndex];
         const id_replicon = clickedRow.ID;
         const id = id_replicon.split('_').slice(1, 4).join('_');
@@ -120,7 +114,7 @@ function buildMainSection(regionCSVPath) {
         Papa.parse(heatmapPath, {
           download: true,
           dynamicTyping: true,
-          complete: function (heatmapResults) {
+          complete: function(heatmapResults) {
             try {
               renderHeatmapFromCSV(heatmapResults, "some_species_id");  // Replace with actual ID if dynamic
             } catch (e) {
@@ -128,7 +122,7 @@ function buildMainSection(regionCSVPath) {
               alert("Failed to render heatmap.");
             }
           },
-          error: function (err) {
+          error: function(err) {
             console.error("Error loading heatmap CSV:", err);
             alert(`Error loading heatmap: ${err.message}`);
           }
@@ -141,16 +135,11 @@ function buildMainSection(regionCSVPath) {
 
   Papa.parse(csv_acp_1, {
     download: true,
-    complete: function (results) {
+    complete: function(results) {
       const data = results.data.filter(row => row.length > 0);
 
-      // Get headers (first row, excluding first empty cell)
       const xValues = data[0].slice(1);
-
-      // Get row labels (first column, skipping header)
       const yValues = data.slice(1).map(row => row[0]);
-
-      // Get heatmap matrix: slice each row (excluding row header) and parse numbers
       const zValues = data.slice(1).map(row =>
         row.slice(1).map(val => parseFloat(val))
       );
@@ -176,16 +165,11 @@ function buildMainSection(regionCSVPath) {
 
   Papa.parse(csv_acp_2, {
     download: true,
-    complete: function (results) {
+    complete: function(results) {
       const data = results.data.filter(row => row.length > 0);
 
-      // Get headers (first row, excluding first empty cell)
       const xValues = data[0].slice(1);
-
-      // Get row labels (first column, skipping header)
       const yValues = data.slice(1).map(row => row[0]);
-
-      // Get heatmap matrix: slice each row (excluding row header) and parse numbers
       const zValues = data.slice(1).map(row =>
         row.slice(1).map(val => parseFloat(val))
       );
@@ -205,9 +189,7 @@ function buildMainSection(regionCSVPath) {
       });
     }
   });
-
-
-} 
+}
 
 function renderHeatmapFromCSV(heatmapResults, id) {
   const matrix = heatmapResults.data.filter(row => row.length > 0);
@@ -228,7 +210,6 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     row.map(val => isNaN(val) ? "" : val.toFixed(2))
   );
 
-  // Define custom colorscale
   const colorScale = [
     [0.0, "blue"],
     [0.333, "white"],
@@ -268,10 +249,10 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     },
     template: "plotly_white",
     shapes: [
-      { type: "line", x0: 0, y0: 1, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 }},
-      { type: "line", x0: 0, y0: 0, x1: 1, y1: 0, xref: "paper", yref: "paper", line: { color: "black", width: 2 }},
-      { type: "line", x0: 0, y0: 0, x1: 0, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 }},
-      { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 }},
+      { type: "line", x0: 0, y0: 1, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+      { type: "line", x0: 0, y0: 0, x1: 1, y1: 0, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+      { type: "line", x0: 0, y0: 0, x1: 0, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+      { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
     ]
   });
 }
@@ -291,16 +272,16 @@ function getCurrentSelections() {
   const filterDropdown = document.getElementById('filterDropdown');
 
   const categoryValue = categoryDropdown ? categoryDropdown.value : null;
-  const filterValue = filterDropdown ? filterDropdown.value : null; 
+  const filterValue = filterDropdown ? filterDropdown.value : null;
 
   return {
-  tabLeftValue,
-  tabRightValue,
-  categoryValue,
-  filterValue
-};
+    tabLeftValue,
+    tabRightValue,
+    categoryValue,
+    filterValue
+  };
 }
-// get path of files
+
 function findFilePath(tree, target, path = []) {
   for (const key in tree) {
     const newPath = [...path, key];
@@ -313,33 +294,33 @@ function findFilePath(tree, target, path = []) {
   return null; // 🔁 or [] if you prefer
 }
 
-
-
-
-document.getElementById('categoryDropdown').addEventListener('change', function () {
+document.getElementById('categoryDropdown').addEventListener('change', function() {
   buildMainSection();
 });
-document.getElementById('filterDropdown').addEventListener('change', function () {
+
+document.getElementById('filterDropdown').addEventListener('change', function() {
   buildMainSection();
 });
+
 document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
-  button.addEventListener('click', function () {
+  button.addEventListener('click', function() {
     buildMainSection();
   });
 });
+
 document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
-  button.addEventListener('click', function () {
+  button.addEventListener('click', function() {
     buildMainSection();
   });
 });
 
 // === INITIAL PLOT RENDER ===
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   buildMainSection();
 });
 
 // === PLOT3 DEFAULTS ===  
-function add_plot3() {
+function addPlots3() {
   document.getElementById('plot3').innerHTML = `
     <div style="
       display: flex;
@@ -355,8 +336,8 @@ function add_plot3() {
   `;
 }
 
-function add_plots() {  
-  add_plot3();
+function addPlots() {
+  addPlots3();
 }
 
 // === TABLE (CARD 2) + CLICK HANDLER FOR plot3 ===
@@ -376,9 +357,9 @@ function add_table() {
     ]);
   }
 
-  $(document).ready(function () {
+  $(document).ready(function() {
     $.get(`./data/taxonomy.csv`)
-      .done(function (csvText) {
+      .done(function(csvText) {
         const tableData = parseTaxonomyCSV(csvText);
         const table = $('#taxonomy').DataTable({
           data: tableData,
@@ -396,17 +377,17 @@ function add_table() {
           scrollCollapse: true,
           fixedHeader: true,
           autoWidth: false,
-          initComplete: function () {
+          initComplete: function() {
             var api = this.api();
-            api.columns().every(function () {
+            api.columns().every(function() {
               var column = this;
               var select = $('<select><option value="">All</option></select>')
                 .appendTo($('.filters th').eq(column.index()).empty())
-                .on('change', function () {
+                .on('change', function() {
                   var val = $.fn.dataTable.util.escapeRegex($(this).val());
                   column.search(val ? '^' + val + '$' : '', true, false).draw();
                 });
-              column.data().unique().sort().each(function (d) {
+              column.data().unique().sort().each(function(d) {
                 if (d) select.append('<option value="' + d + '">' + d + '</option>');
               });
             });
@@ -414,20 +395,20 @@ function add_table() {
         });
 
         // Row click: update plot3
-        $('#taxonomy tbody').on('click', 'tr', function () {
+        $('#taxonomy tbody').on('click', 'tr', function() {
           const rowData = table.row(this).data();
           if (!rowData || rowData.length < 9) return;
 
           const id_replicon = rowData[8];
           const id = rowData[7];
           const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
-          const dataDir = './data/'; 
+          const dataDir = './data/';
           const heatmapPath = `${dataDir}${String(id)}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
           Papa.parse(heatmapPath, {
             download: true,
             dynamicTyping: true,
-            complete: function (heatmapResults) {
+            complete: function(heatmapResults) {
               try {
                 renderHeatmapFromCSV(heatmapResults, "some_species_id");  // Replace with actual ID if dynamic
               } catch (e) {
@@ -435,7 +416,7 @@ function add_table() {
                 alert("Failed to render heatmap.");
               }
             },
-            error: function (err) {
+            error: function(err) {
               console.error("Error loading heatmap CSV:", err);
               alert(`Error loading heatmap: ${err.message}`);
             }
@@ -455,22 +436,15 @@ document.querySelectorAll('.tab-content').forEach(tab => {
   observer.observe(tab, { attributes: true, attributeFilter: ['class'] });
 });
 
-// dropdown actions
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
-  fetch(`./data/taxonomy_values.json`)  // <-- corregí la ruta aquí
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Error al cargar el archivo: ${response.status} ${response.statusText}`);
-      }
-      return response.json();
-    })
+  fetch(`./data/taxonomy_values.json`)
+    .then(response => { return response.json(); })
     .then(data => {
       const taxonKeys = Object.keys(data);
 
-      // Poblamos categoryDropdown
       categoryDropdown.innerHTML = '';
       for (const taxon of taxonKeys) {
         const option = document.createElement("option");
@@ -479,10 +453,9 @@ document.addEventListener("DOMContentLoaded", function () {
         categoryDropdown.appendChild(option);
       }
 
-      // Evento change para categoryDropdown
-      categoryDropdown.addEventListener("change", function () {
+      categoryDropdown.addEventListener("change", function() {
         const selectedTaxon = categoryDropdown.value;
-        filterDropdown.innerHTML = ""; // Limpiamos opciones anteriores
+        filterDropdown.innerHTML = "";
 
         if (data[selectedTaxon]) {
           const values = data[selectedTaxon];
@@ -494,7 +467,6 @@ document.addEventListener("DOMContentLoaded", function () {
             filterDropdown.appendChild(option);
           });
 
-          // Auto-selección si hay 1 o más opciones
           if (values.length === 1) {
             filterDropdown.value = values[0];
             filterDropdown.dispatchEvent(new Event("change"));
@@ -504,7 +476,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // Disparar el cambio inicial para cargar el primer conjunto de filtros
       if (taxonKeys.length > 0) {
         categoryDropdown.value = taxonKeys[0];
         categoryDropdown.dispatchEvent(new Event('change'));
@@ -516,12 +487,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
-
-
-// === Main App Entrypoint ===
 function main() {
-  add_plots();
+  addPlots();
   add_table();
 }
+
 main();
+
