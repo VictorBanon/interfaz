@@ -2,6 +2,12 @@
 
 Best [website](https://victorbanon.github.io/interfaz/) ever! 🚀🚀🚀
 
+## How to run server locally
+
+```
+python3 -m http.server
+```
+
 ## Structure 
 
 this dashboard is compose of 5 part:

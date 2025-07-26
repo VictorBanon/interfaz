@@ -4,6 +4,8 @@
  * [x] Make <select> options in Card4 (taxonomy) update on other selections
  * [ ] Better error handling when there are no plots
  * [ ] Change all Plot references for Card (be consistent!)
+ * [X] make FOLDER_TREE and import instead of hardcode
+ * [X] weird thinks append when loading data: file are suspect to be uploaded multiple times
  *
  */
 
@@ -25,29 +27,7 @@ const TAXONOMIC_ORDER_EXPANDED = [
   ...TAXONOMIC_ORDER,
   "id",
   "id-replicon"
-];
-
-const FOLDER_TREE = {
-  "Bacteria": {
-    "Proteobacteria": {
-      "Betaproteobacteria": {
-        "Neisseriales": {
-          "Neisseriaceae": {
-            "Simonsiella": {}
-          }
-        },
-        "Burkholderiales": {
-          "Burkholderiaceae": {
-            "Burkholderia": {
-              "Burkholderia cenocepacia": {}
-            }
-          }
-        },
-        "Nitrosomonadales": {}
-      }
-    }
-  }
-};
+]; 
 
 const card1 = document.getElementById('card_1');
 const tabButton1 = card1.querySelectorAll('.tab-button');
@@ -77,156 +57,227 @@ tabButton2.forEach(button => {
 function buildACPScatterPlotCard() {
   const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
 
-  const pathArray = findFilePath(FOLDER_TREE, filterValue);
-  if (!pathArray) {
-    // console.log('folderPath not found. Returning early.');
-    return;
-  }
-  const folderPath = pathArray.join('/');
+    findFilePathFromJSON(filterValue).then(pathArray => {
+      if (!pathArray) {
+        console.warn('folderPath not found. Returning early.');
+        return;
+      }
 
-  // Get all levels before the selected one
-  const index = TAXONOMIC_ORDER.indexOf(categoryValue);
-  const levelsBefore = index > 0 ? TAXONOMIC_ORDER.slice(0, index) : [];
-  console.log("Levels before", categoryValue, "are:", levelsBefore);
+      const folderPath = pathArray.join('/');
+      console.log('folderPath:', folderPath); 
 
-  const acpCSVPath = `./data/philogenie/${folderPath}/acp_${tabLeftValue}.csv`;
-  console.log('acpCSVPath:', acpCSVPath);
+      // Get all levels before the selected one
+      const index = TAXONOMIC_ORDER.indexOf(categoryValue);
+      const levelsBefore = index > 0 ? TAXONOMIC_ORDER.slice(0, index) : [];
+      console.log("Levels before", categoryValue, "are:", levelsBefore);
 
-  Papa.parse(acpCSVPath, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const xValues = [];
-      const yValues = [];
-      const pointData = [];
+      const acpCSVPath = `./data/philogenie/${folderPath}/acp_${tabLeftValue}.csv`;
+      console.log('acpCSVPath:', acpCSVPath);
 
-      results.data.forEach(row => {
-        xValues.push(parseFloat(row.PC1));
-        yValues.push(parseFloat(row.PC2));
-        pointData.push(row);
-      });
+      Papa.parse(acpCSVPath, {
+        download: true,
+        header: true,
+        complete: function(results) {
+          const xValues = [];
+          const yValues = [];
+          const pointData = [];
 
-      const hoverLabels = pointData.map(row =>
-        `PC1: ${row.PC1}<br>PC2: ${row.PC2}<br>ID: ${row.ID}`
-      );
+          results.data.forEach(row => {
+            xValues.push(parseFloat(row.PC1));
+            yValues.push(parseFloat(row.PC2));
+            pointData.push(row);
+          });
 
-      Plotly.newPlot('plot1', [{
-        type: 'scatter',
-        mode: 'markers',
-        x: xValues,
-        y: yValues,
-        text: hoverLabels,
-        hoverinfo: 'text',
-        marker: { size: 10 }
-      }], {
-        title: 'ACP',
-        margin: {
-          l: 0, // left margin
-          r: 0, // right margin
-          t: 30, // top margin (can be >0 to fit title)
-          b: 0  // bottom margin
-        },
-        autosize: true,
-        xaxis: {
-          automargin: false,
-          title: '',
-          zeroline: true
-        },
-        yaxis: {
-          automargin: false,
-          title: '',
-          zeroline: true
-        }
-      }, {
-        responsive: true
-      });
+          const hoverLabels = pointData.map(row =>
+            `PC1: ${row.PC1}<br>PC2: ${row.PC2}<br>ID: ${row.ID}`
+          );
 
-      // Add click handler to update plot3
-      document.getElementById('plot1').on('plotly_click', function(eventData) {
-        const clickedRow = pointData[eventData.points[0].pointIndex];
-        const id_replicon = clickedRow.ID;
-        // remove prefix 
-        const id = clickedRow.ID.replace(clickedRow.Replicons_type + "_", "");
-        const { tabLeftValue, tabRightValue } = getCurrentSelections();
-
-        const heatmapPath = `./data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
-
-        Papa.parse(heatmapPath, {
-          download: true,
-          dynamicTyping: true,
-          complete: function(heatmapResults) {
-            try {
-              renderHeatmapFromCSV(heatmapResults, clickedRow.ID);
-            } catch (e) {
-              console.error("Error rendering heatmap:", e);
-              alert("Failed to render heatmap.");
+          Plotly.newPlot('plot1', [{
+            type: 'scatter',
+            mode: 'markers',
+            x: xValues,
+            y: yValues,
+            text: hoverLabels,
+            hoverinfo: 'text',
+            marker: { size: 10 }
+          }], {
+            title: 'ACP',
+            margin: {
+              l: 0, // left margin
+              r: 0, // right margin
+              t: 30, // top margin (can be >0 to fit title)
+              b: 0  // bottom margin
+            },
+            autosize: true,
+            xaxis: {
+              automargin: false,
+              title: '',
+              zeroline: true
+            },
+            yaxis: {
+              automargin: false,
+              title: '',
+              zeroline: true
             }
-          },
-          error: function(err) {
-            console.error("Error loading heatmap CSV:", err);
-            alert(`Error loading heatmap: ${err.message}`);
+          }, {
+            responsive: true
+          });
+
+          // Add click handler to update plot3
+          document.getElementById('plot1').on('plotly_click', function(eventData) {
+            const clickedRow = pointData[eventData.points[0].pointIndex];
+            const id_replicon = clickedRow.ID;
+            // remove prefix 
+            const id = clickedRow.ID.replace(clickedRow.Replicons_type + "_", "");
+            const { tabLeftValue, tabRightValue } = getCurrentSelections();
+
+            const heatmapPath = `./data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
+
+            Papa.parse(heatmapPath, {
+              download: true,
+              dynamicTyping: true,
+              complete: function(heatmapResults) {
+                try {
+                  renderHeatmapFromCSV(heatmapResults, clickedRow.ID);
+                } catch (e) {
+                  console.error("Error rendering heatmap:", e);
+                  alert("Failed to render heatmap.");
+                }
+              },
+              error: function(err) {
+                console.error("Error loading heatmap CSV:", err);
+                alert(`Error loading heatmap: ${err.message}`);
+              }
+            });
+          });
+        }
+      });
+
+      const acp1CSVPath = `./data/philogenie/${folderPath}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+
+      Papa.parse(acp1CSVPath, {
+        download: true,
+        complete: function(results) {
+        const matrix = results.data.filter(row => row.length > 0);
+
+        const xLabels = matrix[0].slice(1); // Columns
+        const yLabels = matrix.slice(1).map(row => row[0]); // Rows
+        const zValuesRaw = matrix.slice(1).map(row =>
+          row.slice(1).map(value => parseFloat(value))
+        ); 
+
+        const textVals = zValuesRaw.map(row =>
+          row.map(val => isNaN(val) ? "" : val.toFixed(2))
+        );
+
+        const colorScale = [
+          [0.0, "blue"],
+          [0.5, "white"],
+          [1.0, "red"]
+        ];
+
+        Plotly.newPlot('plot2_1', [{
+          z: zValuesRaw,
+          x: xLabels,
+          y: yLabels,
+          text: textVals,
+          type: 'heatmap',
+          colorscale: colorScale,
+          zmin: -1,
+          zmax: 1, 
+          hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
+          colorbar: {
+            tickvals: [-1, 0, 1],
+            ticktext: [-1, 0, 1], 
           }
+        }], {
+          title: {
+            text: `PC1`,
+            font: { size: 18 }
+          },
+          xaxis: {
+            title: "Arm Length"
+          },
+          yaxis: {
+            title: "Gap Length",
+            tickmode: "linear",
+            tick0: parseFloat(yLabels[0]) || 0,
+            dtick: 2
+          },
+          template: "plotly_white",
+          shapes: [
+            { type: "line", x0: 0, y0: 1, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+            { type: "line", x0: 0, y0: 0, x1: 1, y1: 0, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+            { type: "line", x0: 0, y0: 0, x1: 0, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+            { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+          ]
         });
+        }
       });
-    }
-  });
 
-  const acp1CSVPath = `./data/philogenie/${folderPath}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+      const acp2CSVPath = `./data/philogenie/${folderPath}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
-  Papa.parse(acp1CSVPath, {
-    download: true,
-    complete: function(results) {
-      const data = results.data.filter(row => row.length > 0);
+      Papa.parse(acp2CSVPath, {
+        download: true,
+        complete: function(results) {
+        const matrix = results.data.filter(row => row.length > 0);
 
-      const xValues = data[0].slice(1);
-      const yValues = data.slice(1).map(row => row[0]);
-      const zValues = data.slice(1).map(row =>
-        row.slice(1).map(val => parseFloat(val))
-      );
+        const xLabels = matrix[0].slice(1); // Columns
+        const yLabels = matrix.slice(1).map(row => row[0]); // Rows
+        const zValuesRaw = matrix.slice(1).map(row =>
+          row.slice(1).map(value => parseFloat(value))
+        ); 
 
-      Plotly.newPlot('plot2_1', [{
-        type: 'heatmap',
-        z: zValues,
-        x: xValues,
-        y: yValues,
-        hoverongaps: false,
-        colorscale: 'YlGnBu',
-        hovertemplate: 'X: %{x}<br>Y: %{y}<br>Z: %{z}<extra></extra>'
-      }], {
-        title: 'Heatmap View',
-        xaxis: { title: 'Columns' },
-        yaxis: { title: 'Rows' }
+        const textVals = zValuesRaw.map(row =>
+          row.map(val => isNaN(val) ? "" : val.toFixed(2))
+        );
+
+        const colorScale = [
+          [0.0, "blue"],
+          [0.5, "white"],
+          [1.0, "red"]
+        ];
+
+        Plotly.newPlot('plot2_2', [{
+          z: zValuesRaw,
+          x: xLabels,
+          y: yLabels,
+          text: textVals,
+          type: 'heatmap',
+          colorscale: colorScale,
+          zmin: -1,
+          zmax: 1, 
+          hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
+          colorbar: {
+            tickvals: [-1, 0, 1],
+            ticktext: [-1, 0, 1], 
+          }
+        }], {
+          title: {
+            text: `PC2`,
+            font: { size: 18 }
+          },
+          xaxis: {
+            title: "Arm Length"
+          },
+          yaxis: {
+            title: "Gap Length",
+            tickmode: "linear",
+            tick0: parseFloat(yLabels[0]) || 0,
+            dtick: 2
+          },
+          template: "plotly_white",
+          shapes: [
+            { type: "line", x0: 0, y0: 1, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+            { type: "line", x0: 0, y0: 0, x1: 1, y1: 0, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+            { type: "line", x0: 0, y0: 0, x1: 0, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+            { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+          ]
+        });
+        }
       });
-    }
-  });
-
-  const acp2CSVPath = `./data/philogenie/${folderPath}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
-
-  Papa.parse(acp2CSVPath, {
-    download: true,
-    complete: function(results) {
-      const data = results.data.filter(row => row.length > 0);
-
-      const xValues = data[0].slice(1);
-      const yValues = data.slice(1).map(row => row[0]);
-      const zValues = data.slice(1).map(row =>
-        row.slice(1).map(val => parseFloat(val))
-      );
-
-      Plotly.newPlot('plot2_2', [{
-        type: 'heatmap',
-        z: zValues,
-        x: xValues,
-        y: yValues,
-        hoverongaps: false,
-        colorscale: 'YlGnBu',
-        hovertemplate: 'X: %{x}<br>Y: %{y}<br>Z: %{z}<extra></extra>'
-      }], {
-        title: 'Heatmap View',
-        xaxis: { title: 'Columns' },
-        yaxis: { title: 'Rows' }
-      });
-    }
+    }).catch(error => {
+      console.error("Error resolving pathArray:", error);
   });
 }
 
@@ -266,13 +317,70 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     type: 'heatmap',
     colorscale: colorScale,
     zmin: -1,
-    zmax: 2,
-    texttemplate: "%{text}",
+    zmax: 2, 
     hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
     colorbar: {
       tickvals: [-1, 0, 1, 2],
       ticktext: ["10⁻¹", "10⁰", "10¹", "10²"],
       title: "Log Scale"
+    }
+  }], {
+    title: {
+      text: `Heatmap for <i>${id}</i>`,
+      font: { size: 18 }
+    },
+    xaxis: {
+      title: "Arm Length"
+    },
+    yaxis: {
+      title: "Gap Length",
+      tickmode: "linear",
+      tick0: parseFloat(yLabels[0]) || 0,
+      dtick: 2
+    },
+    template: "plotly_white",
+    shapes: [
+      { type: "line", x0: 0, y0: 1, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+      { type: "line", x0: 0, y0: 0, x1: 1, y1: 0, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+      { type: "line", x0: 0, y0: 0, x1: 0, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+      { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
+    ]
+  });
+}
+
+function renderHeatmapACPFromCSV(heatmapResults, id) { 
+
+  const matrix = heatmapResults.data.filter(row => row.length > 0);
+
+  const xLabels = matrix[0].slice(1); // Columns
+  const yLabels = matrix.slice(1).map(row => row[0]); // Rows
+  const zValuesRaw = matrix.slice(1).map(row =>
+    row.slice(1).map(value => parseFloat(value))
+  ); 
+
+  const textVals = zValuesRaw.map(row =>
+    row.map(val => isNaN(val) ? "" : val.toFixed(2))
+  );
+
+  const colorScale = [
+    [0.0, "blue"],
+    [0.5, "white"],
+    [1.0, "black"]
+  ];
+
+  Plotly.newPlot('plot3', [{
+    z: zLog,
+    x: xLabels,
+    y: yLabels,
+    text: textVals,
+    type: 'heatmap',
+    colorscale: colorScale,
+    zmin: -1,
+    zmax: 2, 
+    hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
+    colorbar: {
+      tickvals: [-1, 0, 1],
+      ticktext: [-1, 0, 1], 
     }
   }], {
     title: {
@@ -322,6 +430,23 @@ function getCurrentSelections() {
   };
 }
 
+function findFilePathFromJSON(target) {
+  return fetch('./data/structure.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(tree => {
+      return findFilePath(tree, target);
+    })
+    .catch(err => {
+      console.error("Failed to load or parse structure.json:", err);
+      return null;
+    });
+}
+
 function findFilePath(tree, target, path = []) {
   for (const key in tree) {
     const newPath = [...path, key];
@@ -349,11 +474,7 @@ function addPlots3() {
       <p>Click on a chromosome to display</p>
     </div>
   `;
-}
-
-function addPlots() {
-  addPlots3();
-}
+} 
 
 // Bottom-right section
 function buildTaxonomyCard() {
@@ -493,8 +614,29 @@ function buildTaxonomyCard() {
   });
 }
 
-// Bottom-right section
+// Bottom-right section 
+document.getElementById('categoryDropdown').addEventListener('change', function() {
+  buildACPScatterPlotCard();
+});
+
+document.getElementById('filterDropdown').addEventListener('change', function() {
+  buildACPScatterPlotCard();
+});
+
+document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
+  button.addEventListener('click', function() {
+    buildACPScatterPlotCard();
+  });
+});
+
+document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
+  button.addEventListener('click', function() {
+    buildACPScatterPlotCard();
+  });
+});
+
 document.addEventListener("DOMContentLoaded", function() {
+  buildACPScatterPlotCard();
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
@@ -546,30 +688,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-document.getElementById('categoryDropdown').addEventListener('change', function() {
-  buildACPScatterPlotCard();
-});
-
-document.getElementById('filterDropdown').addEventListener('change', function() {
-  buildACPScatterPlotCard();
-});
-
-document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
-  button.addEventListener('click', function() {
-    buildACPScatterPlotCard();
-  });
-});
-
-document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
-  button.addEventListener('click', function() {
-    buildACPScatterPlotCard();
-  });
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-  buildACPScatterPlotCard();
-});
-
 // === Resize active plot on tab switch ===
 const observer = new MutationObserver(() => {
   document.querySelectorAll('.tab-content.active div[id^="plot"]').forEach(plot => {
@@ -582,7 +700,7 @@ document.querySelectorAll('.tab-content').forEach(tab => {
 });
 
 function main() {
-  addPlots();
+  addPlots3();
   buildTaxonomyCard();
 }
 

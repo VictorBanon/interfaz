@@ -1,0 +1,21 @@
+{
+  "Bacteria": {
+    "Proteobacteria": {
+      "Betaproteobacteria": {
+        "Neisseriales": {
+          "Neisseriaceae": {
+            "Simonsiella": {}
+          }
+        },
+        "Burkholderiales": {
+          "Burkholderiaceae": {
+            "Burkholderia": {
+              "Burkholderia cenocepacia": {}
+            }
+          }
+        },
+        "Nitrosomonadales": {}
+      }
+    }
+  }
+}
