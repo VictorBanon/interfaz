@@ -37,10 +37,10 @@ html, body {
   gap: 15px;
 }
 .sidebar li {
-  display: flex;
+  display: flex; 
   align-items: center;
   gap: 10px;
-  flex-direction: column;
+  flex-direction: row;
   padding: 10px;
   border-radius: 6px;
   cursor: pointer;

@@ -1,0 +1,158 @@
+[
+  {
+    "name": "Bacteria",
+    "taxon": "superkingdom",
+    "children": [
+      {
+        "name": "Proteobacteria",
+        "taxon": "phylum",
+        "children": [
+          {
+            "name": "Betaproteobacteria",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Burkholderiales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Burkholderiaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Burkholderia",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Burkholderia cenocepacia",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Ferrovales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Ferrovaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Ferrovum",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Ferrovum myxofaciens",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Neisseriales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Neisseriaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Alysiella",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Alysiella filiformis",
+                            "taxon": "species"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Kingella",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Kingella oralis",
+                            "taxon": "species"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Morococcus",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Morococcus cerebrosus",
+                            "taxon": "species"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Paralysiella",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Paralysiella testudinis",
+                            "taxon": "species"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Simonsiella",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Simonsiella muelleri",
+                            "taxon": "species"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Uruburuella",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Uruburuella suis",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Nitrosomonadales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Nitrosomonadaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Nitrosomonas",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Nitrosomonas europaea",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
