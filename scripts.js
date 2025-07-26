@@ -72,7 +72,7 @@ const FOLDER_TREE = {
 };
 
 // === MAIN ACP SCATTER PLOT ===
-function buildMainSection(regionCSVPath) {
+function buildMainSection() {
   const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
 
   const pathArray = findFilePath(FOLDER_TREE, filterValue);
@@ -143,7 +143,8 @@ function buildMainSection(regionCSVPath) {
       document.getElementById('plot1').on('plotly_click', function(eventData) {
         const clickedRow = pointData[eventData.points[0].pointIndex];
         const id_replicon = clickedRow.ID;
-        const id = id_replicon.split('_').slice(1, 4).join('_');
+        // remove prefix 
+        const id = clickedRow.ID.replace(clickedRow.Replicons_type + "_", "");
         const { tabLeftValue, tabRightValue } = getCurrentSelections();
 
         const heatmapPath = `./data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;

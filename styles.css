@@ -32,7 +32,6 @@ html, body {
   margin-bottom: 30px;
 }
 .sidebar ul {
-  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -41,6 +40,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-direction: column;
   padding: 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -49,7 +49,7 @@ html, body {
 .sidebar li:hover {
   background-color: #374151;
 }
-/* Bottom sidebar */  
+/* Bottom sidebar */
 .bottom-card {
   padding: 15px;
   border-radius: 12px;
@@ -60,6 +60,15 @@ html, body {
   bottom: 20px;
   left: 20px;
   right: 20px;
+}
+
+.explanation-card {
+  background-color: #354152;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 0.9em;
+  border-radius: 4px;
 }
 
 /* Main area */
