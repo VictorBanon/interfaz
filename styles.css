@@ -167,6 +167,18 @@ html, body {
   line-height: 1;
 }
 
+/* Use fixed layout for table - for ellipsis */
+#taxonomy {
+  table-layout: fixed;
+  text-overflow: ellipsis;
+}
+/* Required for ellipsis */
+.card table.dataTable tbody td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* DataTables styling */
 #taxonomy thead tr.filters th {
   padding: 4px 6px !important;

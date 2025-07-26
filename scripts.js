@@ -1,3 +1,30 @@
+/*
+ * TODO:
+ * [x] Align columns
+ * [ ] Better error handling when there are no plots
+ *
+ */
+
+function capitalize(s) {
+  return String(s[0]).toUpperCase() + String(s).slice(1);
+}
+
+const TAXONOMIC_ORDER = [
+  "kingdom",
+  "phylum",
+  "class",
+  "order",
+  "family",
+  "genus",
+  "species"
+];
+
+const TAXONOMIC_ORDER_EXPANDED = [
+  ...TAXONOMIC_ORDER,
+  "id",
+  "id-replicon"
+];
+
 const card1 = document.getElementById('card_1');
 const tabButton1 = card1.querySelectorAll('.tab-button');
 const card2 = document.getElementById('card_2');
@@ -43,16 +70,6 @@ const FOLDER_TREE = {
     }
   }
 };
-
-const TAXONOMIC_ORDER = [
-  "superkingdom",
-  "phylum",
-  "class",
-  "order",
-  "family",
-  "genus",
-  "species"
-];
 
 // === MAIN ACP SCATTER PLOT ===
 function buildMainSection(regionCSVPath) {
@@ -311,33 +328,10 @@ function findFilePath(tree, target, path = []) {
     const result = findFilePath(tree[key], target, newPath);
     if (result) return result;
   }
-  return null; // 🔁 or [] if you prefer
+  return null;
 }
 
-document.getElementById('categoryDropdown').addEventListener('change', function() {
-  buildMainSection();
-});
 
-document.getElementById('filterDropdown').addEventListener('change', function() {
-  buildMainSection();
-});
-
-document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
-  button.addEventListener('click', function() {
-    buildMainSection();
-  });
-});
-
-document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
-  button.addEventListener('click', function() {
-    buildMainSection();
-  });
-});
-
-// === INITIAL PLOT RENDER ===
-document.addEventListener("DOMContentLoaded", function() {
-  buildMainSection();
-});
 
 // === PLOT3 DEFAULTS ===  
 function addPlots3() {
@@ -360,7 +354,7 @@ function addPlots() {
   addPlots3();
 }
 
-// === TABLE (CARD 2) + CLICK HANDLER FOR plot3 ===
+// Bottom-right section
 function add_table() {
   function parseTaxonomyCSV(csv) {
     const result = Papa.parse(csv.trim(), { header: true });
@@ -381,25 +375,30 @@ function add_table() {
     $.get(`./data/taxonomy.csv`)
       .done(function(csvText) {
         const tableData = parseTaxonomyCSV(csvText);
+
+        const cols = TAXONOMIC_ORDER_EXPANDED.map(order => {
+          const columnDefinition = {
+            title: capitalize(order),
+          };
+
+          // Show full word on hover (by setting the CSS title)
+          // * Note that the word ellipsis is controlled by the CSS statically
+          columnDefinition.createdCell = function(cell, cellData) {
+            cell.setAttribute('title', cellData);
+          };
+
+          return columnDefinition;
+        });
+
         const table = $('#taxonomy').DataTable({
           data: tableData,
-          columns: [
-            { title: 'Kingdom' }, { title: 'Phylum' }, { title: 'Class' },
-            { title: 'Order' }, { title: 'Family' }, { title: 'Genus' },
-            { title: 'Species' }, { title: 'ID' }, { title: 'ID-replicon' }
-          ],
-          orderCellsTop: true,
-          lengthChange: false,
-          info: false,
+          columns: cols,
           paging: true,
-          pageLength: 5,
-          scrollY: '50px',
-          scrollCollapse: true,
-          fixedHeader: true,
-          autoWidth: false,
+          pageLength: 10,
           initComplete: function() {
-            var api = this.api();
-            api.columns().every(function() {
+            // Add options selection on Top
+            // TODO: ellipsis 
+            this.api().columns().every(function() {
               var column = this;
               var select = $('<select><option value="">All</option></select>')
                 .appendTo($('.filters th').eq(column.index()).empty())
@@ -421,7 +420,7 @@ function add_table() {
 
           const id_replicon = rowData[8];
           const id = rowData[7];
-          const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
+          const { tabLeftValue, tabRightValue } = getCurrentSelections();
           const dataDir = './data/';
           const heatmapPath = `${dataDir}${String(id)}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
@@ -430,7 +429,7 @@ function add_table() {
             dynamicTyping: true,
             complete: function(heatmapResults) {
               try {
-                renderHeatmapFromCSV(heatmapResults, "some_species_id");  // Replace with actual ID if dynamic
+                renderHeatmapFromCSV(heatmapResults, "some_species_id");
               } catch (e) {
                 console.error("Error rendering heatmap:", e);
                 alert("Failed to render heatmap.");
@@ -446,16 +445,7 @@ function add_table() {
   });
 }
 
-// === Resize active plot on tab switch ===
-const observer = new MutationObserver(() => {
-  document.querySelectorAll('.tab-content.active div[id^="plot"]').forEach(plot => {
-    Plotly.Plots.resize(plot);
-  });
-});
-document.querySelectorAll('.tab-content').forEach(tab => {
-  observer.observe(tab, { attributes: true, attributeFilter: ['class'] });
-});
-
+// Bottom-right section
 document.addEventListener("DOMContentLoaded", function() {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
@@ -506,6 +496,41 @@ document.addEventListener("DOMContentLoaded", function() {
       console.error(msg, err);
       alert(msg);
     });
+});
+
+document.getElementById('categoryDropdown').addEventListener('change', function() {
+  buildMainSection();
+});
+
+document.getElementById('filterDropdown').addEventListener('change', function() {
+  buildMainSection();
+});
+
+document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
+  button.addEventListener('click', function() {
+    buildMainSection();
+  });
+});
+
+document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
+  button.addEventListener('click', function() {
+    buildMainSection();
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+  buildMainSection();
+});
+
+// === Resize active plot on tab switch ===
+const observer = new MutationObserver(() => {
+  document.querySelectorAll('.tab-content.active div[id^="plot"]').forEach(plot => {
+    Plotly.Plots.resize(plot);
+  });
+});
+
+document.querySelectorAll('.tab-content').forEach(tab => {
+  observer.observe(tab, { attributes: true, attributeFilter: ['class'] });
 });
 
 function main() {
