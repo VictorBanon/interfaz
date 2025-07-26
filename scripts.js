@@ -120,7 +120,7 @@ function buildMainSection(regionCSVPath) {
         }
       }, {
         responsive: true
-      }); 
+      });
 
       // Add click handler to update plot3
       document.getElementById('plot1').on('plotly_click', function(eventData) {
@@ -136,7 +136,7 @@ function buildMainSection(regionCSVPath) {
           dynamicTyping: true,
           complete: function(heatmapResults) {
             try {
-              renderHeatmapFromCSV(heatmapResults, clickedRow.ID);  // Replace with actual ID if dynamic
+              renderHeatmapFromCSV(heatmapResults, clickedRow.ID);
             } catch (e) {
               console.error("Error rendering heatmap:", e);
               alert("Failed to render heatmap.");
@@ -151,9 +151,9 @@ function buildMainSection(regionCSVPath) {
     }
   });
 
-  const csv_acp_1 = `./data/philogenie/${folderPath}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+  const acp1CSVPath = `./data/philogenie/${folderPath}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
-  Papa.parse(csv_acp_1, {
+  Papa.parse(acp1CSVPath, {
     download: true,
     complete: function(results) {
       const data = results.data.filter(row => row.length > 0);
@@ -180,9 +180,9 @@ function buildMainSection(regionCSVPath) {
     }
   });
 
-  const csv_acp_2 = `./data/philogenie/${folderPath}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+  const acp2CSVPath = `./data/philogenie/${folderPath}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
-  Papa.parse(csv_acp_2, {
+  Papa.parse(acp2CSVPath, {
     download: true,
     complete: function(results) {
       const data = results.data.filter(row => row.length > 0);
@@ -227,7 +227,6 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     row.map(val => (val > 0 ? Math.log10(val) : -1)) // Clamp log10(0) to -1
   );
 
-  // Create text labels
   const textVals = zValuesRaw.map(row =>
     row.map(val => isNaN(val) ? "" : val.toFixed(2))
   );
@@ -307,7 +306,7 @@ function findFilePath(tree, target, path = []) {
   for (const key in tree) {
     const newPath = [...path, key];
     if (key === target) {
-      return newPath; // ✅ return array
+      return newPath;
     }
     const result = findFilePath(tree[key], target, newPath);
     if (result) return result;
@@ -503,8 +502,9 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     })
     .catch(err => {
-      console.error("Error loading taxonomy_values.json:", err);
-      alert("No se pudo cargar el archivo taxonomy_values.json.");
+      const msg = "Error loading taxonomy_values.json"
+      console.error(msg, err);
+      alert(msg);
     });
 });
 
