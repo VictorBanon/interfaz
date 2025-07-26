@@ -22,57 +22,58 @@ tabButton2.forEach(button => {
   });
 });
 
+const FOLDER_TREE = {
+  "Bacteria": {
+    "Proteobacteria": {
+      "Betaproteobacteria": {
+        "Neisseriales": {
+          "Neisseriaceae": {
+            "Simonsiella": {}
+          }
+        },
+        "Burkholderiales": {
+          "Burkholderiaceae": {
+            "Burkholderia": {
+              "Burkholderia cenocepacia": {}
+            }
+          }
+        },
+        "Nitrosomonadales": {}
+      }
+    }
+  }
+};
+
+const TAXONOMIC_ORDER = [
+  "superkingdom",
+  "phylum",
+  "class",
+  "order",
+  "family",
+  "genus",
+  "species"
+];
+
 // === MAIN ACP SCATTER PLOT ===
 function buildMainSection(regionCSVPath) {
   const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
-  const folderTree = {
-    "Bacteria": {
-      "Proteobacteria": {
-        "Betaproteobacteria": {
-          "Neisseriales": {
-            "Neisseriaceae": {
-              "Simonsiella": {}
-            }
-          },
-          "Burkholderiales": {
-            "Burkholderiaceae": {
-              "Burkholderia": {
-                "Burkholderia cenocepacia": {}
-              }
-            }
-          },
-          "Nitrosomonadales": {}
-        }
-      }
-    }
-  };
 
-  const pathArray = findFilePath(folderTree, filterValue);
-  if (pathArray) {
-    console.log('Path:', pathArray.join('/'));  // ➜ root/folderA/subfolder1/file1.csv
-  } else {
-    console.log('File not found.');
+  const pathArray = findFilePath(FOLDER_TREE, filterValue);
+  if (!pathArray) {
+    // console.log('folderPath not found. Returning early.');
+    return;
   }
-  const taxonomicOrder = [
-    "superkingdom",
-    "phylum",
-    "class",
-    "order",
-    "family",
-    "genus",
-    "species"
-  ];
+  const folderPath = pathArray.join('/');
 
   // Get all levels before the selected one
-  const index = taxonomicOrder.indexOf(categoryValue);
-  const levelsBefore = index > 0 ? taxonomicOrder.slice(0, index) : [];
-
+  const index = TAXONOMIC_ORDER.indexOf(categoryValue);
+  const levelsBefore = index > 0 ? TAXONOMIC_ORDER.slice(0, index) : [];
   console.log("Levels before", categoryValue, "are:", levelsBefore);
 
-  const csv_acp = `./data/philogenie/${pathArray.join("/")}/acp_${tabLeftValue}.csv`;
-  console.log('filterValue:', csv_acp);
+  const acpCSVPath = `./data/philogenie/${folderPath}/acp_${tabLeftValue}.csv`;
+  console.log('acpCSVPath:', acpCSVPath);
 
-  Papa.parse(csv_acp, {
+  Papa.parse(acpCSVPath, {
     download: true,
     header: true,
     complete: function(results) {
@@ -107,7 +108,7 @@ function buildMainSection(regionCSVPath) {
         const clickedRow = pointData[eventData.points[0].pointIndex];
         const id_replicon = clickedRow.ID;
         const id = id_replicon.split('_').slice(1, 4).join('_');
-        const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
+        const { tabLeftValue, tabRightValue } = getCurrentSelections();
 
         const heatmapPath = `./data/${id}/analysis/${id_replicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
@@ -116,7 +117,7 @@ function buildMainSection(regionCSVPath) {
           dynamicTyping: true,
           complete: function(heatmapResults) {
             try {
-              renderHeatmapFromCSV(heatmapResults, "some_species_id");  // Replace with actual ID if dynamic
+              renderHeatmapFromCSV(heatmapResults, clickedRow.ID);  // Replace with actual ID if dynamic
             } catch (e) {
               console.error("Error rendering heatmap:", e);
               alert("Failed to render heatmap.");
@@ -131,7 +132,7 @@ function buildMainSection(regionCSVPath) {
     }
   });
 
-  const csv_acp_1 = `./data/philogenie/${pathArray.join("/")}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
+  const csv_acp_1 = `./data/philogenie/${folderPath}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
   Papa.parse(csv_acp_1, {
     download: true,
@@ -160,8 +161,7 @@ function buildMainSection(regionCSVPath) {
     }
   });
 
-  const csv_acp_2 = `./data/philogenie/${pathArray.join("/")}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
-
+  const csv_acp_2 = `./data/philogenie/${folderPath}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
 
   Papa.parse(csv_acp_2, {
     download: true,
@@ -192,6 +192,9 @@ function buildMainSection(regionCSVPath) {
 }
 
 function renderHeatmapFromCSV(heatmapResults, id) {
+  // Clear the plot (to get rid of the default on click)
+  document.getElementById('plot3').innerHTML = "";
+
   const matrix = heatmapResults.data.filter(row => row.length > 0);
 
   const xLabels = matrix[0].slice(1); // Columns
@@ -235,7 +238,7 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     }
   }], {
     title: {
-      text: `Heatmap for "${id}"`,
+      text: `Heatmap for <i>${id}</i>`,
       font: { size: 18 }
     },
     xaxis: {
@@ -256,7 +259,6 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     ]
   });
 }
-
 
 // get all important variables
 function getCurrentSelections() {
