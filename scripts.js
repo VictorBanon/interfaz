@@ -1,7 +1,9 @@
 /*
  * TODO:
  * [x] Align columns
+ * [x] Make <select> options in Card4 (taxonomy) update on other selections
  * [ ] Better error handling when there are no plots
+ * [ ] Change all Plot references for Card (be consistent!)
  *
  */
 
@@ -24,6 +26,28 @@ const TAXONOMIC_ORDER_EXPANDED = [
   "id",
   "id-replicon"
 ];
+
+const FOLDER_TREE = {
+  "Bacteria": {
+    "Proteobacteria": {
+      "Betaproteobacteria": {
+        "Neisseriales": {
+          "Neisseriaceae": {
+            "Simonsiella": {}
+          }
+        },
+        "Burkholderiales": {
+          "Burkholderiaceae": {
+            "Burkholderia": {
+              "Burkholderia cenocepacia": {}
+            }
+          }
+        },
+        "Nitrosomonadales": {}
+      }
+    }
+  }
+};
 
 const card1 = document.getElementById('card_1');
 const tabButton1 = card1.querySelectorAll('.tab-button');
@@ -49,30 +73,8 @@ tabButton2.forEach(button => {
   });
 });
 
-const FOLDER_TREE = {
-  "Bacteria": {
-    "Proteobacteria": {
-      "Betaproteobacteria": {
-        "Neisseriales": {
-          "Neisseriaceae": {
-            "Simonsiella": {}
-          }
-        },
-        "Burkholderiales": {
-          "Burkholderiaceae": {
-            "Burkholderia": {
-              "Burkholderia cenocepacia": {}
-            }
-          }
-        },
-        "Nitrosomonadales": {}
-      }
-    }
-  }
-};
-
-// === MAIN ACP SCATTER PLOT ===
-function buildMainSection() {
+// Top-left
+function buildACPScatterPlotCard() {
   const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
 
   const pathArray = findFilePath(FOLDER_TREE, filterValue);
@@ -332,8 +334,6 @@ function findFilePath(tree, target, path = []) {
   return null;
 }
 
-
-
 // === PLOT3 DEFAULTS ===  
 function addPlots3() {
   document.getElementById('plot3').innerHTML = `
@@ -356,7 +356,7 @@ function addPlots() {
 }
 
 // Bottom-right section
-function add_table() {
+function buildTaxonomyCard() {
   function parseTaxonomyCSV(csv) {
     const result = Papa.parse(csv.trim(), { header: true });
     return result.data.map(row => [
@@ -397,18 +397,70 @@ function add_table() {
           paging: true,
           pageLength: 10,
           initComplete: function() {
-            // Add options selection on Top
-            // TODO: ellipsis 
-            this.api().columns().every(function() {
-              var column = this;
-              var select = $('<select><option value="">All</option></select>')
-                .appendTo($('.filters th').eq(column.index()).empty())
-                .on('change', function() {
-                  var val = $.fn.dataTable.util.escapeRegex($(this).val());
-                  column.search(val ? '^' + val + '$' : '', true, false).draw();
+            const api = this.api();
+            const filterHeaders = $('.filters th');
+
+            // Add filtering options on top
+            api.columns().every(function() {
+              const column = this;
+              const colIndex = column.index();
+
+              // Create <select> element with default "All" option
+              const $select = $('<select><option value="">All</option></select>');
+
+              // Append the <select> to the corresponding filter header cell
+              filterHeaders.eq(colIndex)
+                .empty()
+                .append($select);
+
+              // Populate the <select> with unique, sorted values from the column
+              column.data().unique().sort().each(function(value) {
+                $select.append(`<option value="${value}">${value}</option>`);
+              });
+
+              // When the user changes the <select>, filter the column
+              $select.on('change', function() {
+                const selection = $.fn.dataTable.util.escapeRegex($(this).val());
+                const searchRegex = selection ? `^${selection}$` : '';
+                column.search(searchRegex, true, false).draw();
+              });
+
+              // Update <select> options for all columns
+              $select.on('change', function() {
+                const filteredRows = api.rows({ search: 'applied' }); // !!!
+                api.columns().every(function() {
+                  const otherColumn = this;
+                  const otherColIndex = otherColumn.index();
+
+                  const $otherSelect = filterHeaders.eq(otherColIndex).find('select');
+                  const currentValue = $otherSelect.val();
+
+                  // Collect unique values for this column from filtered rows only
+                  const uniqueValues = [];
+                  filteredRows.every(function() {
+                    const rowData = this.data();
+                    uniqueValues.push(rowData[otherColIndex]);
+                  });
+
+                  // These are the updated <select> options
+                  const uniqueSorted = [...new Set(uniqueValues)].filter(Boolean).sort();
+
+                  // Clear and rebuild the <select>
+                  $otherSelect.empty().append('<option value="">All</option>');
+                  uniqueSorted.forEach(val => {
+                    $otherSelect.append(`<option value="${val}">${val}</option>`);
+                  });
+
+                  // If the current value is still valid, keep it — otherwise reset
+                  if (currentValue && uniqueSorted.includes(currentValue)) {
+                    $otherSelect.val(currentValue);
+                  } else {
+                    $otherSelect.val('');
+                    otherColumn.search('', true, false);
+                  }
                 });
-              column.data().unique().sort().each(function(d) {
-                if (d) select.append('<option value="' + d + '">' + d + '</option>');
+
+                api.draw();
               });
             });
           }
@@ -429,12 +481,7 @@ function add_table() {
             download: true,
             dynamicTyping: true,
             complete: function(heatmapResults) {
-              try {
-                renderHeatmapFromCSV(heatmapResults, "some_species_id");
-              } catch (e) {
-                console.error("Error rendering heatmap:", e);
-                alert("Failed to render heatmap.");
-              }
+              renderHeatmapFromCSV(heatmapResults, "some_species_id");
             },
             error: function(err) {
               console.error("Error loading heatmap CSV:", err);
@@ -500,27 +547,27 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 document.getElementById('categoryDropdown').addEventListener('change', function() {
-  buildMainSection();
+  buildACPScatterPlotCard();
 });
 
 document.getElementById('filterDropdown').addEventListener('change', function() {
-  buildMainSection();
+  buildACPScatterPlotCard();
 });
 
 document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
   button.addEventListener('click', function() {
-    buildMainSection();
+    buildACPScatterPlotCard();
   });
 });
 
 document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
   button.addEventListener('click', function() {
-    buildMainSection();
+    buildACPScatterPlotCard();
   });
 });
 
 document.addEventListener("DOMContentLoaded", function() {
-  buildMainSection();
+  buildACPScatterPlotCard();
 });
 
 // === Resize active plot on tab switch ===
@@ -536,7 +583,7 @@ document.querySelectorAll('.tab-content').forEach(tab => {
 
 function main() {
   addPlots();
-  add_table();
+  buildTaxonomyCard();
 }
 
 main();
