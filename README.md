@@ -1,6 +1,6 @@
 # Dashboard
 
-Best [website](https://victorbanon.github.io/interfaz/) ever! 🚀🚀🚀
+Best [website](https://victorbanon.github.io/interfaz/structural.html) ever! 🚀🚀🚀
 
 ## How to run server locally
 
