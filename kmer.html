@@ -82,19 +82,19 @@
           <div class="dropdowns" style="display: flex; gap: 1rem;">
             <label>
               Taxon:
-              <select id="categoryDropdown">
-                <option value="all">All</option>
-                <option value="coding">Coding</option>
-                <option value="noncoding">Non Coding</option>
+              <select id="categoryDropdown"> 
               </select>
             </label>
 
             <label>
               Value:
+              <select id="filterDropdown"> 
+              </select>
+            </label>
+            <label>
+              Graph:
               <select id="filterDropdown">
-                <option value="recent">Recent</option>
-                <option value="popular">Popular</option>
-                <option value="trending">Trending</option>
+                <option value="acp">ACP</option> 
               </select>
             </label>
           </div>
@@ -108,9 +108,8 @@
         <!-- Second card with tabs and plots -->
         <div class="card" id = "card_2">
           <div class="tabs" id ="tabs_top_right">
-            <button class="tab-button" data-tab="ha">HA</button>
-            <button class="tab-button" data-tab="hb">HB</button>
-            <button class="tab-button active" data-tab="hc">HC</button>
+            <button class="tab-button active" data-tab="kmercomp">kmercomp</button>
+            <button class="tab-button" data-tab="kmerratio">kmerratio</button> 
           </div>
           <!-- One Plot Container -->
           <div class="tab-content" style="display: flex;">
