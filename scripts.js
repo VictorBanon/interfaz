@@ -37,6 +37,23 @@ const BORDER_SHAPE = [
   { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
 ];
 
+// Simple utility for WIP features
+function renderNotFoundHTML(elementId) {
+  document.getElementById(elementId).innerHTML = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+      font-size: 1.2em;">
+      <div style="font-size: 2em;">&#9888;</div>
+      <p>Data Not Found</p>
+    </div>
+  `;
+}
+
 const card1 = document.getElementById('card_1');
 const tabButton1 = card1.querySelectorAll('.tab-button');
 const card2 = document.getElementById('card_2');
@@ -53,12 +70,13 @@ tabButtons.forEach(buttonGroup => {
   });
 });
 
-async function buildDropdowns() {
+// Top-left
+async function buildDropdownsCard1() {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
   fetch(`${DATA_DIR}/taxonomy_values.json`)
-    .then(response => { return response.json(); })
+    .then(response => response.json())
     .then(data => {
       const taxonKeys = Object.keys(data);
 
@@ -133,141 +151,158 @@ async function findFilePathFromJSON(target) {
     });
 }
 
+function renderPlotCard1(acpCSVPath) {
+  Papa.parse(acpCSVPath, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      const xValues = [];
+      const yValues = [];
+      const pointData = [];
+
+      results.data.forEach(row => {
+        xValues.push(parseFloat(row.PC1));
+        yValues.push(parseFloat(row.PC2));
+        pointData.push(row);
+      });
+
+      const hoverLabels = pointData.map(row =>
+        `PC1: ${row.PC1}<br>PC2: ${row.PC2}<br>ID: ${row.ID}`
+      );
+
+      Plotly.newPlot('plot1', [{
+        type: 'scatter',
+        mode: 'markers',
+        x: xValues,
+        y: yValues,
+        text: hoverLabels,
+        hoverinfo: 'text',
+        marker: { size: 10 }
+      }], {
+        title: 'ACP',
+        // left, right etc. margins
+        margin: {
+          l: 0,
+          r: 0,
+          t: 30,
+          b: 0
+        },
+      }, {
+        responsive: true
+      });
+
+      // Add click handler to card1 that updates plot3
+      document.getElementById('plot1').on('plotly_click', function(eventData) {
+        const clickedRow = pointData[eventData.points[0].pointIndex];
+        const idReplicon = clickedRow.ID;
+        const id = idReplicon.replace(clickedRow.Replicons_type + "_", "");
+        const { tabLeftValue, tabRightValue } = getCurrentSelections();
+        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
+
+        renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
+      });
+
+    }
+  });
+}
+
+// Top-right
+function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
+  Papa.parse(acpCSVPathPlot2, {
+    download: true,
+    complete: function(results) {
+      const matrix = results.data.filter(row => row.length > 0);
+
+      const xLabels = matrix[0].slice(1); // Columns
+      const yLabels = matrix.slice(1).map(row => row[0]); // Rows
+      const zValuesRaw = matrix.slice(1).map(row =>
+        row.slice(1).map(value => parseFloat(value))
+      );
+
+      const textVals = zValuesRaw.map(row =>
+        row.map(val => isNaN(val) ? "" : val.toFixed(2))
+      );
+
+      const colorScale = [
+        [0.0, "blue"],
+        [0.5, "white"],
+        [1.0, "red"]
+      ];
+
+      Plotly.newPlot(plotName, [{
+        z: zValuesRaw,
+        x: xLabels,
+        y: yLabels,
+        text: textVals,
+        type: 'heatmap',
+        colorscale: colorScale,
+        zmin: -1,
+        zmax: 1,
+        hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
+        colorbar: {
+          tickvals: [-1, 0, 1],
+          ticktext: [-1, 0, 1],
+        }
+      }], {
+        title: {
+          text: titleText,
+          font: { size: 18 }
+        },
+        xaxis: {
+          title: "Arm Length"
+        },
+        yaxis: {
+          title: "Gap Length",
+          tickmode: "linear",
+          tick0: parseFloat(yLabels[0]) || 0,
+          dtick: 2
+        },
+        template: "plotly_white",
+        shapes: BORDER_SHAPE
+      });
+    }
+  });
+}
+
 // Top-left
-function buildACPScatterPlotCard() {
+function buildPlotCard1() {
+  // console.log("[BPC1] called buildPlotCard1");
   const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
 
   findFilePathFromJSON(filterValue).then(pathArray => {
     if (!pathArray) {
-      console.warn('folderPath not found. Returning early.');
+      console.warn(`folderPath not found with filterValue=${filterValue}. Returning early.`);
       return;
     }
 
-    const folderPath = pathArray.join('/');
-    console.log('folderPath:', folderPath);
+    const folderPath = pathArray.join("/"); // This is not the whole path!
+    // console.log(`folderPath=${folderPath} found with filterValue=${filterValue}.`);
 
-    // Get all levels before the selected one
-    const index = TAXONOMIC_ORDER.indexOf(categoryValue);
-    const levelsBefore = index > 0 ? TAXONOMIC_ORDER.slice(0, index) : [];
-    console.log("Levels before", categoryValue, "are:", levelsBefore);
+    const rootPath = `${DATA_DIR}/philogenie/${folderPath}`;
+    const acpCSVPath = `${rootPath}/acp_${tabLeftValue}.csv`;
+    renderPlotCard1(acpCSVPath);
 
-    const acpCSVPath = `${DATA_DIR}/philogenie/${folderPath}/acp_${tabLeftValue}.csv`;
-    console.log('acpCSVPath:', acpCSVPath);
+    const parameters = [categoryValue, filterValue, tabRightValue, tabLeftValue]
+      .map(String)
+      .join("_");
+    const acp1CSVPath = `${rootPath}/PC0_${parameters}.csv`
+    const acp2CSVPath = `${rootPath}/PC1_${parameters}.csv`
 
-    Papa.parse(acpCSVPath, {
-      download: true,
-      header: true,
-      complete: function(results) {
-        const xValues = [];
-        const yValues = [];
-        const pointData = [];
-
-        results.data.forEach(row => {
-          xValues.push(parseFloat(row.PC1));
-          yValues.push(parseFloat(row.PC2));
-          pointData.push(row);
-        });
-
-        const hoverLabels = pointData.map(row =>
-          `PC1: ${row.PC1}<br>PC2: ${row.PC2}<br>ID: ${row.ID}`
-        );
-
-        Plotly.newPlot('plot1', [{
-          type: 'scatter',
-          mode: 'markers',
-          x: xValues,
-          y: yValues,
-          text: hoverLabels,
-          hoverinfo: 'text',
-          marker: { size: 10 }
-        }], {
-          title: 'ACP',
-          // left, right etc. margins
-          margin: {
-            l: 0,
-            r: 0,
-            t: 30,
-            b: 0
-          },
-        }, {
-          responsive: true
-        });
-
-        // Add click handler to card1 that updates plot3
-        document.getElementById('plot1').on('plotly_click', function(eventData) {
-          const clickedRow = pointData[eventData.points[0].pointIndex];
-          const idReplicon = clickedRow.ID;
-          const id = idReplicon.replace(clickedRow.Replicons_type + "_", "");
-          const { tabLeftValue, tabRightValue } = getCurrentSelections();
-          const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
-
-          renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
-        });
-      }
-    });
-
-    function renderPlot2(acpCSVPathPlot2, plotName, titleText) {
-      Papa.parse(acpCSVPathPlot2, {
-        download: true,
-        complete: function(results) {
-          const matrix = results.data.filter(row => row.length > 0);
-
-          const xLabels = matrix[0].slice(1); // Columns
-          const yLabels = matrix.slice(1).map(row => row[0]); // Rows
-          const zValuesRaw = matrix.slice(1).map(row =>
-            row.slice(1).map(value => parseFloat(value))
-          );
-
-          const textVals = zValuesRaw.map(row =>
-            row.map(val => isNaN(val) ? "" : val.toFixed(2))
-          );
-
-          const colorScale = [
-            [0.0, "blue"],
-            [0.5, "white"],
-            [1.0, "red"]
-          ];
-
-          Plotly.newPlot(plotName, [{
-            z: zValuesRaw,
-            x: xLabels,
-            y: yLabels,
-            text: textVals,
-            type: 'heatmap',
-            colorscale: colorScale,
-            zmin: -1,
-            zmax: 1,
-            hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
-            colorbar: {
-              tickvals: [-1, 0, 1],
-              ticktext: [-1, 0, 1],
-            }
-          }], {
-            title: {
-              text: titleText,
-              font: { size: 18 }
-            },
-            xaxis: {
-              title: "Arm Length"
-            },
-            yaxis: {
-              title: "Gap Length",
-              tickmode: "linear",
-              tick0: parseFloat(yLabels[0]) || 0,
-              dtick: 2
-            },
-            template: "plotly_white",
-            shapes: BORDER_SHAPE
-          });
-        }
-      });
+    // Check that path exists and display notFoundError in case of failure!
+    function checkAndRender(csvPath, elementId, plotLabel) {
+      fetch(csvPath, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            renderPlotsCard2(csvPath, elementId, plotLabel);
+          } else {
+            console.warn(`CSV not found: ${csvPath}`);
+            renderNotFoundHTML(elementId);
+          }
+        })
     }
 
-    const acp1CSVPath = `${DATA_DIR}/philogenie/${folderPath}/PC0_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
-    const acp2CSVPath = `${DATA_DIR}/philogenie/${folderPath}/PC1_${categoryValue}_${filterValue}_${tabRightValue}_${tabLeftValue}.csv`
-
-    renderPlot2(acp1CSVPath, "plot2_1", "PC1");
-    renderPlot2(acp2CSVPath, "plot2_2", "PC2");
+    checkAndRender(acp1CSVPath, "plot2_1", "PC1");
+    checkAndRender(acp2CSVPath, "plot2_2", "PC2");
   }).catch(error => {
     console.error("Error resolving pathArray:", error);
   });
@@ -403,30 +438,34 @@ function renderHeatmapACPFromCSV(heatmapResults, id) {
 
 // get all important variables
 function getCurrentSelections() {
-  // Tabs (get the active button's data-tab)
   const activeTopLeftTab = document.querySelector('#tabs_top_left .tab-button.active');
   const activeTopRightTab = document.querySelector('#card_2 .tab-button.active');
 
-  const tabLeftValue = activeTopLeftTab ? activeTopLeftTab.getAttribute('data-tab') : null;
-  const tabRightValue = activeTopRightTab ? activeTopRightTab.getAttribute('data-tab') : null;
+  // all | cod | non
+  const tabLeftValue = activeTopLeftTab.getAttribute('data-tab');
+  // hc
+  const tabRightValue = activeTopRightTab.getAttribute('data-tab');
 
-  // Dropdowns
   const categoryDropdown = document.getElementById('categoryDropdown');
   const filterDropdown = document.getElementById('filterDropdown');
 
-  const categoryValue = categoryDropdown ? categoryDropdown.value : null;
-  const filterValue = filterDropdown ? filterDropdown.value : null;
+  const categoryValue = categoryDropdown.value;
+  const filterValue = filterDropdown.value;
 
-  return {
+  const selections = {
     tabLeftValue,
     tabRightValue,
     categoryValue,
     filterValue
   };
+
+  // console.log('Current Selections:', selections);
+
+  return selections;
 }
 
 // Bottom-left default
-function buildPlot3() {
+function buildPlotCard3() {
   document.getElementById('plot3').innerHTML = `
     <div style="
       display: flex;
@@ -568,24 +607,19 @@ function buildTaxonomyCard() {
   });
 }
 
-// Bottom-right section 
-document.getElementById('categoryDropdown').addEventListener('change', function() {
-  buildACPScatterPlotCard();
-});
 
-document.getElementById('filterDropdown').addEventListener('change', function() {
-  buildACPScatterPlotCard();
-});
 
 document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
   button.addEventListener('click', function() {
-    buildACPScatterPlotCard();
+    console.log("Top left tab clicked — rebuilding Plot Card 1");
+    buildPlotCard1();
   });
 });
 
 document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
   button.addEventListener('click', function() {
-    buildACPScatterPlotCard();
+    console.log("Top right tab clicked — rebuilding Plot Card 2");
+    buildPlotCard1();
   });
 });
 
@@ -600,10 +634,19 @@ document.querySelectorAll('.tab-content').forEach(tab => {
 });
 
 // main entrypoint
-document.addEventListener("DOMContentLoaded", function() {
-  buildACPScatterPlotCard();
-  buildPlot3();
+document.addEventListener("DOMContentLoaded", async function() {
+  await buildDropdownsCard1();
+
+  // These two should go into buildDropdownsCard1
+  document.getElementById('categoryDropdown').addEventListener('change', function() {
+    buildPlotCard1();
+  });
+  document.getElementById('filterDropdown').addEventListener('change', function() {
+    buildPlotCard1();
+  });
+
+  buildPlotCard1();
+  buildPlotCard3();
   buildTaxonomyCard();
-  buildDropdowns();
 });
 
