@@ -212,15 +212,8 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
     download: true,
     complete: function(results) {
       const matrix = results.data.filter(row => row.length > 0);
-
-      const xLabels = matrix[0].slice(1); // Columns
-      const yLabels = matrix.slice(1).map(row => row[0]); // Rows
-      const zValuesRaw = matrix.slice(1).map(row =>
+      const z = matrix.slice(1).map(row =>
         row.slice(1).map(value => parseFloat(value))
-      );
-
-      const textVals = zValuesRaw.map(row =>
-        row.map(val => isNaN(val) ? "" : val.toFixed(2))
       );
 
       const colorScale = [
@@ -230,15 +223,11 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
       ];
 
       Plotly.newPlot(plotName, [{
-        z: zValuesRaw,
-        x: xLabels,
-        y: yLabels,
-        text: textVals,
+        z: z,
         type: 'heatmap',
         colorscale: colorScale,
         zmin: -1,
         zmax: 1,
-        hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
         colorbar: {
           tickvals: [-1, 0, 1],
           ticktext: [-1, 0, 1],
@@ -249,12 +238,11 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
           font: { size: 18 }
         },
         xaxis: {
-          title: "Arm Length"
+          title: { text: "Arm Length" }
         },
         yaxis: {
-          title: "Gap Length",
+          title: { text: "Gap Length" },
           tickmode: "linear",
-          tick0: parseFloat(yLabels[0]) || 0,
           dtick: 2
         },
         template: "plotly_white",
@@ -308,39 +296,27 @@ function buildPlotCard1() {
   });
 }
 
+// Bottom-left
 function renderHeatmapFromCSVPathAndId(heatmapCSVPath, id) {
   Papa.parse(heatmapCSVPath, {
     download: true,
-    dynamicTyping: true,
     complete: function(heatmapResults) {
       renderHeatmapFromCSV(heatmapResults, id);
     },
-    error: function(err) {
-      console.error("Error loading heatmap CSV:", err);
-      alert(`Error loading heatmap: ${err.message}`);
-    }
   });
 }
 
+// Bottom-left
 function renderHeatmapFromCSV(heatmapResults, id) {
   // Clear the plot (to get rid of the default on click)
   document.getElementById('plot3').innerHTML = "";
 
   const matrix = heatmapResults.data.filter(row => row.length > 0);
-
-  const xLabels = matrix[0].slice(1); // Columns
-  const yLabels = matrix.slice(1).map(row => row[0]); // Rows
-  const zValuesRaw = matrix.slice(1).map(row =>
-    row.slice(1).map(value => parseFloat(value))
-  );
-
-  // Convert to log10, handling zeros and negatives
-  const zLog = zValuesRaw.map(row =>
-    row.map(val => (val > 0 ? Math.log10(val) : -1)) // Clamp log10(0) to -1
-  );
-
-  const textVals = zValuesRaw.map(row =>
-    row.map(val => isNaN(val) ? "" : val.toFixed(2))
+  const zLog = matrix.slice(1).map(row =>
+    row.slice(1).map(value => {
+      const z = parseFloat(value);
+      return z > 0 ? Math.log10(z) : -1;
+    })
   );
 
   const colorScale = [
@@ -352,18 +328,13 @@ function renderHeatmapFromCSV(heatmapResults, id) {
 
   Plotly.newPlot('plot3', [{
     z: zLog,
-    x: xLabels,
-    y: yLabels,
-    text: textVals,
     type: 'heatmap',
     colorscale: colorScale,
     zmin: -1,
     zmax: 2,
-    hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
     colorbar: {
       tickvals: [-1, 0, 1, 2],
       ticktext: ["10⁻¹", "10⁰", "10¹", "10²"],
-      title: "Log Scale"
     }
   }], {
     title: {
@@ -371,64 +342,10 @@ function renderHeatmapFromCSV(heatmapResults, id) {
       font: { size: 18 }
     },
     xaxis: {
-      title: "Arm Length"
+      title: { text: "Arm Length" }
     },
     yaxis: {
-      title: "Gap Length",
-      tickmode: "linear",
-      tick0: parseFloat(yLabels[0]) || 0,
-      dtick: 2
-    },
-    template: "plotly_white",
-    shapes: BORDER_SHAPE
-  });
-}
-
-function renderHeatmapACPFromCSV(heatmapResults, id) {
-  const matrix = heatmapResults.data.filter(row => row.length > 0);
-
-  const xLabels = matrix[0].slice(1); // Columns
-  const yLabels = matrix.slice(1).map(row => row[0]); // Rows
-  const zValuesRaw = matrix.slice(1).map(row =>
-    row.slice(1).map(value => parseFloat(value))
-  );
-
-  const textVals = zValuesRaw.map(row =>
-    row.map(val => isNaN(val) ? "" : val.toFixed(2))
-  );
-
-  const colorScale = [
-    [0.0, "blue"],
-    [0.5, "white"],
-    [1.0, "black"]
-  ];
-
-  Plotly.newPlot('plot3', [{
-    z: zLog,
-    x: xLabels,
-    y: yLabels,
-    text: textVals,
-    type: 'heatmap',
-    colorscale: colorScale,
-    zmin: -1,
-    zmax: 2,
-    hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
-    colorbar: {
-      tickvals: [-1, 0, 1],
-      ticktext: [-1, 0, 1],
-    }
-  }], {
-    title: {
-      text: `Heatmap for <i>${id}</i>`,
-      font: { size: 18 }
-    },
-    xaxis: {
-      title: "Arm Length"
-    },
-    yaxis: {
-      title: "Gap Length",
-      tickmode: "linear",
-      tick0: parseFloat(yLabels[0]) || 0,
+      title: { text: "Gap Length" },
       dtick: 2
     },
     template: "plotly_white",
