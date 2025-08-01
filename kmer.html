@@ -79,22 +79,27 @@
           </div>
 
           <!-- Dropdowns -->
+          <!-- Probably should not be hardcoded! --> 
           <div class="dropdowns" style="display: flex; gap: 1rem;">
             <label>
               Taxon:
-              <select id="categoryDropdown"> 
+              <select id="categoryDropdown">
+                <option value="superkingdom">Recent</option>
               </select>
             </label>
 
             <label>
-              Value:
-              <select id="filterDropdown"> 
+              Filter:
+              <select id="filterDropdown">
+                <option value="Bacteria">Recent</option>
               </select>
             </label>
+
             <label>
-              Graph:
-              <select id="filterDropdown">
-                <option value="acp">ACP</option> 
+              Graphique:
+              <select id="graphDropdown">
+                <option value="acp">ACP</option>
+                <option value="max">Maximun</option>
               </select>
             </label>
           </div>
@@ -108,8 +113,9 @@
         <!-- Second card with tabs and plots -->
         <div class="card" id = "card_2">
           <div class="tabs" id ="tabs_top_right">
-            <button class="tab-button active" data-tab="kmercomp">kmercomp</button>
-            <button class="tab-button" data-tab="kmerratio">kmerratio</button> 
+            <button class="tab-button" data-tab="ha">HA</button>
+            <button class="tab-button" data-tab="hb">HB</button>
+            <button class="tab-button active" data-tab="hc">HC</button> 
           </div>
           <!-- One Plot Container -->
           <div class="tab-content" style="display: flex;">
@@ -120,7 +126,7 @@
 
         <!-- Third card with single plot -->
         <div class="card"> 
-          <div class="tab-content active" id="tab_botton_1">
+          <div class="tab-content" style="display: flex;">
             <div id="plot3" style="width:100%;height:100%;"></div>
           </div>
         </div>
