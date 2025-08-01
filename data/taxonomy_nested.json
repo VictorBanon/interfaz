@@ -1,0 +1,286 @@
+[
+  {
+    "name": "Bacteria",
+    "taxon": "superkingdom",
+    "children": [
+      {
+        "name": "Actinobacteria",
+        "taxon": "phylum",
+        "children": [
+          {
+            "name": "Actinomycetia",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Corynebacteriales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Mycobacteriaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Mycobacterium",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Mycobacterium tuberculosis",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Firmicutes",
+        "taxon": "phylum",
+        "children": [
+          {
+            "name": "Bacilli",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Bacillales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Bacillaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Bacillus",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Bacillus subtilis",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Staphylococcaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Staphylococcus",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Staphylococcus aureus",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Lactobacillales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Lactobacillaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Lactobacillus",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Lactobacillus crispatus",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Clostridia",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Eubacteriales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Peptostreptococcaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Clostridioides",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Clostridioides difficile",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Proteobacteria",
+        "taxon": "phylum",
+        "children": [
+          {
+            "name": "Alphaproteobacteria",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Caulobacterales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Caulobacteraceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Caulobacter",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Caulobacter vibrioides",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Epsilonproteobacteria",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Campylobacterales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Helicobacteraceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Helicobacter",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Helicobacter pylori",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Gammaproteobacteria",
+            "taxon": "class",
+            "children": [
+              {
+                "name": "Enterobacterales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Enterobacteriaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Escherichia",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Escherichia coli",
+                            "taxon": "species"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Salmonella",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Salmonella enterica",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Pseudomonadales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Pseudomonadaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Pseudomonas",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Pseudomonas aeruginosa",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Vibrionales",
+                "taxon": "order",
+                "children": [
+                  {
+                    "name": "Vibrionaceae",
+                    "taxon": "family",
+                    "children": [
+                      {
+                        "name": "Vibrio",
+                        "taxon": "genus",
+                        "children": [
+                          {
+                            "name": "Vibrio cholerae",
+                            "taxon": "species"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

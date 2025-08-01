@@ -1,20 +1,92 @@
 {
   "Bacteria": {
-    "Proteobacteria": {
-      "Betaproteobacteria": {
-        "Neisseriales": {
-          "Neisseriaceae": {
-            "Simonsiella": {}
+    "Actinobacteria": {
+      "Actinomycetia": {
+        "Corynebacteriales": {
+          "Mycobacteriaceae": {
+            "Mycobacterium": {
+              "Mycobacterium tuberculosis": {}
+            }
           }
-        },
-        "Burkholderiales": {
-          "Burkholderiaceae": {
-            "Burkholderia": {
-              "Burkholderia cenocepacia": {}
+        }
+      }
+    },
+    "Firmicutes": {
+      "Clostridia": {
+        "Eubacteriales": {
+          "Peptostreptococcaceae": {
+            "Clostridioides": {
+              "Clostridioides difficile": {}
+            }
+          }
+        }
+      },
+      "Bacilli": {
+        "Bacillales": {
+          "Staphylococcaceae": {
+            "Staphylococcus": {
+              "Staphylococcus aureus": {}
+            }
+          },
+          "Bacillaceae": {
+            "Bacillus": {
+              "Bacillus subtilis": {}
             }
           }
         },
-        "Nitrosomonadales": {}
+        "Lactobacillales": {
+          "Lactobacillaceae": {
+            "Lactobacillus": {
+              "Lactobacillus crispatus": {}
+            }
+          }
+        }
+      }
+    },
+    "Proteobacteria": {
+      "Alphaproteobacteria": {
+        "Caulobacterales": {
+          "Caulobacteraceae": {
+            "Caulobacter": {
+              "Caulobacter vibrioides": {}
+            }
+          }
+        }
+      },
+      "Epsilonproteobacteria": {
+        "Campylobacterales": {
+          "Helicobacteraceae": {
+            "Helicobacter": {
+              "Helicobacter pylori": {}
+            }
+          }
+        }
+      },
+      "Gammaproteobacteria": {
+        "Enterobacterales": {
+          "Enterobacteriaceae": {
+            "Escherichia": {
+              "Escherichia coli": {}
+            },
+            "Salmonella": {
+              "Salmonella enterica": {}
+            }
+          }
+        },
+        "Vibrionales": {
+          "Vibrionaceae": {
+            "Vibrio": {
+              "Vibrio cholerae": {}
+            }
+          }
+        },
+        "Pseudomonadales": {
+          "Pseudomonadaceae": {
+            "Pseudomonas": {
+              "Pseudomonas aeruginosa": {}
+            }
+          }
+        }
       }
     }
   }

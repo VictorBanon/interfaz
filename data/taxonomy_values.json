@@ -3,44 +3,65 @@
     "Bacteria"
   ],
   "phylum": [
+    "Actinobacteria",
+    "Firmicutes",
     "Proteobacteria"
   ],
   "class": [
-    "Betaproteobacteria"
+    "Actinomycetia",
+    "Alphaproteobacteria",
+    "Bacilli",
+    "Clostridia",
+    "Epsilonproteobacteria",
+    "Gammaproteobacteria"
   ],
   "order": [
-    "Neisseriales",
-    "Burkholderiales",
-    "Nitrosomonadales",
-    "Ferrovales"
+    "Bacillales",
+    "Campylobacterales",
+    "Caulobacterales",
+    "Corynebacteriales",
+    "Enterobacterales",
+    "Eubacteriales",
+    "Lactobacillales",
+    "Pseudomonadales",
+    "Vibrionales"
   ],
   "family": [
-    "Neisseriaceae",
-    "Burkholderiaceae",
-    "Nitrosomonadaceae",
-    "Ferrovaceae"
+    "Bacillaceae",
+    "Caulobacteraceae",
+    "Enterobacteriaceae",
+    "Helicobacteraceae",
+    "Lactobacillaceae",
+    "Mycobacteriaceae",
+    "Peptostreptococcaceae",
+    "Pseudomonadaceae",
+    "Staphylococcaceae",
+    "Vibrionaceae"
   ],
   "genus": [
-    "Simonsiella",
-    "Kingella",
-    "Alysiella",
-    "Paralysiella",
-    "Uruburuella",
-    "Morococcus",
-    "Burkholderia",
-    "Nitrosomonas",
-    "Ferrovum"
+    "Bacillus",
+    "Caulobacter",
+    "Clostridioides",
+    "Escherichia",
+    "Helicobacter",
+    "Lactobacillus",
+    "Mycobacterium",
+    "Pseudomonas",
+    "Salmonella",
+    "Staphylococcus",
+    "Vibrio"
   ],
   "species": [
-    "Simonsiella muelleri",
-    "Kingella oralis",
-    "Alysiella filiformis",
-    "Neisseriaceae bacterium CCUG 44465",
-    "Paralysiella testudinis",
-    "Uruburuella suis",
-    "Morococcus cerebrosus",
-    "Burkholderia cenocepacia",
-    "Nitrosomonas europaea",
-    "Ferrovum myxofaciens"
+    "Bacillus subtilis",
+    "Caulobacter vibrioides",
+    "Clostridioides difficile",
+    "Escherichia coli",
+    "Helicobacter pylori",
+    "Lactobacillus crispatus",
+    "Mycobacterium tuberculosis",
+    "Pseudomonas aeruginosa",
+    "Salmonella enterica",
+    "Staphylococcus aureus",
+    "Vibrio cholerae"
   ]
 }

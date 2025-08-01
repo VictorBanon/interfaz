@@ -1,0 +1,16 @@
+{
+  "min_ir_size": 3,
+  "max_ir_size": 1000,
+  "max_gap": 20,
+  "max_mismatch": 0,
+  "input_path": "data/NCBI-partial-12-rep",
+  "output_path": "results/12-rep",
+  "output_format": "custom",
+  "replica_number": 10,
+  "files": "ALL_FILES",
+  "name_output": "12-rep",
+  "split_mode": "each_special_R",
+  "n_jobs": 4,
+  "replicons": "none",
+  "sample_size": -1
+}
