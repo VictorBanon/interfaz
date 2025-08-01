@@ -162,7 +162,7 @@ function renderPlotCard1(acpCSVPath) {
 
       results.data.forEach(row => {
         xValues.push(parseFloat(row.PC1));
-        yValues.push(parseFloat(row.PC2)); 
+        yValues.push(parseFloat(row.PC2));
         pointData.push(row);
       });
 
@@ -206,7 +206,7 @@ function renderPlotCard1(acpCSVPath) {
   });
 }
 
-function renderPlotCard1_max(acpCSVPath) {
+function renderPlotCard1Max(acpCSVPath) {
   Papa.parse(acpCSVPath, {
     download: true,
     header: true,
@@ -221,7 +221,7 @@ function renderPlotCard1_max(acpCSVPath) {
         [0.333, "white"],
         [0.666, "red"],
         [1.0, "black"]
-      ]; 
+      ];
 
       results.data.forEach(row => {
         xValues.push(parseFloat(row.size));
@@ -231,93 +231,86 @@ function renderPlotCard1_max(acpCSVPath) {
 
         zValues.push(logZ);
         pointData.push(row);
-      });  
+      });
 
-            
       const hoverLabels = pointData.map(row =>
         `size: ${row.size}<br>gap: ${row.gap}<br>value: ${row.z}<br>ID: ${row.ID}`
       );
-      var trace1 = { 
-        x: xValues, 
-        y: yValues, 
-        mode: 'markers', 
-        name: 'points', 
+      var trace1 = {
+        x: xValues,
+        y: yValues,
+        mode: 'markers',
+        name: 'points',
         text: hoverLabels,
-        marker: {  
-          size: 20,  
+        marker: {
+          size: 20,
           cmin: -1,
           cmax: 2,
           color: zValues,
           colorscale: colorScale,
-        }, 
-        type: 'scatter' 
-      }; 
+        },
+        type: 'scatter'
+      };
 
-      var trace2 = { 
-        x: xValues, 
-        y: yValues, 
-        name: 'density', 
-        ncontours: 20, 
-        colorscale: "Greys", 
-        showscale: false, 
-        type: 'histogram2dcontour' 
+      var trace2 = {
+        x: xValues,
+        y: yValues,
+        name: 'density',
+        ncontours: 20,
+        colorscale: "Greys",
+        showscale: false,
+        type: 'histogram2dcontour'
       };
 
       var trace3 = {
-
-        x: xValues, 
-        name: 'x density', 
-        marker: {color: 'rgba(4, 92, 48, 1)'}, 
-        yaxis: 'y2', 
-        type: 'histogram' 
+        x: xValues,
+        name: 'x density',
+        marker: { color: 'rgba(4, 92, 48, 1)' },
+        yaxis: 'y2',
+        type: 'histogram'
       };
 
-      var trace4 = { 
-        y: yValues, 
-        name: 'y density', 
-        marker: {color: 'rgba(6, 81, 131, 1)'}, 
-        xaxis: 'x2', 
-        type: 'histogram' 
+      var trace4 = {
+        y: yValues,
+        name: 'y density',
+        marker: { color: 'rgba(6, 81, 131, 1)' },
+        xaxis: 'x2',
+        type: 'histogram'
       };
 
-      var data = [trace2,trace1, trace3, trace4];
+      var data = [trace2, trace1, trace3, trace4];
 
-      var layout = { 
+      var layout = {
         xaxis: { range: [3, 20], title: 'Arm Length' },
         yaxis: { range: [0, 20], title: 'Gap Length' },
-        showlegend: false, 
-        autosize: true,  
-        margin: {t: 50}, 
-        hovermode: 'closest', 
-        bargap: 0, 
-        xaxis: { 
-          domain: [0, 0.85], 
-          showgrid: false, 
-          zeroline: false 
+        showlegend: false,
+        autosize: true,
+        margin: { t: 50 },
+        hovermode: 'closest',
+        bargap: 0,
+        xaxis: {
+          domain: [0, 0.85],
+          showgrid: false,
+          zeroline: false
         },
-
-        yaxis: { 
-          domain: [0, 0.85], 
-          showgrid: false, 
-          zeroline: false 
+        yaxis: {
+          domain: [0, 0.85],
+          showgrid: false,
+          zeroline: false
         },
-
-        xaxis2: { 
-          domain: [0.85, 1], 
-          showgrid: false, 
-          zeroline: false 
+        xaxis2: {
+          domain: [0.85, 1],
+          showgrid: false,
+          zeroline: false
         },
-
-        yaxis2: { 
-          domain: [0.85, 1], 
-          showgrid: false, 
-          zeroline: false 
+        yaxis2: {
+          domain: [0.85, 1],
+          showgrid: false,
+          zeroline: false
         }
-
       };
 
       Plotly.newPlot('plot1', data, layout);
-      
 
       // Add click handler to card1 that updates plot3
       document.getElementById('plot1').on('plotly_click', function(eventData) {
@@ -333,12 +326,32 @@ function renderPlotCard1_max(acpCSVPath) {
   });
 }
 
+// Shared across all heatmaps
+function heatmapPlotSharedParameters(x) {
+  return {
+    xaxis: {
+      title: { text: "Arm Length" },
+      tickmode: 'linear',
+      tick0: x[0],
+      dtick: 5,
+    },
+    yaxis: {
+      title: { text: "Gap Length" },
+      dtick: 2
+    },
+    template: "plotly_white",
+    shapes: BORDER_SHAPE
+  }
+};
+
 // Top-right
 function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
   Papa.parse(acpCSVPathPlot2, {
     download: true,
     complete: function(results) {
-      const matrix = results.data.filter(row => row.length > 0);
+      const matrix = results.data.filter(row => row.length > 1);
+      const x = matrix[0].slice(1);
+      const y = matrix.slice(1).map(row => row[0]);
       const z = matrix.slice(1).map(row =>
         row.slice(1).map(value => parseFloat(value))
       );
@@ -350,6 +363,8 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
       ];
 
       Plotly.newPlot(plotName, [{
+        x: x,
+        y: y,
         z: z,
         type: 'heatmap',
         colorscale: colorScale,
@@ -364,16 +379,7 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
           text: titleText,
           font: { size: 18 }
         },
-        xaxis: {
-          title: { text: "Arm Length" }
-        },
-        yaxis: {
-          title: { text: "Gap Length" },
-          tickmode: "linear",
-          dtick: 2
-        },
-        template: "plotly_white",
-        shapes: BORDER_SHAPE
+        ...heatmapPlotSharedParameters(x)
       });
     }
   });
@@ -382,7 +388,7 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
 // Top-left
 function buildPlotCard1() {
   // console.log("[BPC1] called buildPlotCard1");
-  const { tabLeftValue, tabRightValue, categoryValue, filterValue,graphValue } = getCurrentSelections();
+  const { tabLeftValue, tabRightValue, categoryValue, filterValue, graphValue } = getCurrentSelections();
 
   findFilePathFromJSON(filterValue).then(pathArray => {
     if (!pathArray) {
@@ -393,20 +399,21 @@ function buildPlotCard1() {
     const folderPath = pathArray.join("/"); // This is not the whole path!
     // console.log(`folderPath=${folderPath} found with filterValue=${filterValue}.`);
 
-    const rootPath = `${DATA_DIR}/philogenie/${folderPath}`; 
-
-    const parameters = [tabRightValue,tabLeftValue,filterValue]
+    const rootPath = `${DATA_DIR}/philogenie/${folderPath}`;
+    const parameters = [tabRightValue, tabLeftValue, filterValue]
       .map(String)
       .join("_");
+    const acpCSVPath = `${rootPath}/${graphValue}_${parameters}.csv`;
 
-    const acpCSVPath = `${rootPath}/${graphValue}_${parameters}.csv`; 
+    switch (graphValue) {
+      case "acp":
+        renderPlotCard1(acpCSVPath);
+        break;
+      case "max":
+        renderPlotCard1Max(acpCSVPath);
+        break;
+    }
 
-    if (graphValue === "acp") {
-      renderPlotCard1(acpCSVPath);
-    }
-    if (graphValue === "max") {
-      renderPlotCard1_max(acpCSVPath);
-    }
     const acp1CSVPath = `${rootPath}/PC0_${parameters}.csv`
     const acp2CSVPath = `${rootPath}/PC1_${parameters}.csv`
 
@@ -445,7 +452,9 @@ function renderHeatmapFromCSV(heatmapResults, id) {
   // Clear the plot (to get rid of the default on click)
   document.getElementById('plot3').innerHTML = "";
 
-  const matrix = heatmapResults.data.filter(row => row.length > 0);
+  const matrix = heatmapResults.data.filter(row => row.length > 1);
+  const x = matrix[0].slice(1);
+  const y = matrix.slice(1).map(row => row[0]);
   const zLog = matrix.slice(1).map(row =>
     row.slice(1).map(value => {
       const z = parseFloat(value);
@@ -461,6 +470,8 @@ function renderHeatmapFromCSV(heatmapResults, id) {
   ];
 
   Plotly.newPlot('plot3', [{
+    x: x,
+    y: y,
     z: zLog,
     type: 'heatmap',
     colorscale: colorScale,
@@ -475,15 +486,7 @@ function renderHeatmapFromCSV(heatmapResults, id) {
       text: `Heatmap for <i>${id}</i>`,
       font: { size: 18 }
     },
-    xaxis: {
-      title: { text: "Arm Length" }
-    },
-    yaxis: {
-      title: { text: "Gap Length" },
-      dtick: 2
-    },
-    template: "plotly_white",
-    shapes: BORDER_SHAPE
+    ...heatmapPlotSharedParameters(x)
   });
 }
 
