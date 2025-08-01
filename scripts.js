@@ -326,12 +326,32 @@ function renderPlotCard1Max(acpCSVPath) {
   });
 }
 
+// Shared across all heatmaps
+function heatmapPlotSharedParameters(x) {
+  return {
+    xaxis: {
+      title: { text: "Arm Length" },
+      tickmode: 'linear',
+      tick0: x[0],
+      dtick: 5,
+    },
+    yaxis: {
+      title: { text: "Gap Length" },
+      dtick: 2
+    },
+    template: "plotly_white",
+    shapes: BORDER_SHAPE
+  }
+};
+
 // Top-right
 function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
   Papa.parse(acpCSVPathPlot2, {
     download: true,
     complete: function(results) {
-      const matrix = results.data.filter(row => row.length > 0);
+      const matrix = results.data.filter(row => row.length > 1);
+      const x = matrix[0].slice(1);
+      const y = matrix.slice(1).map(row => row[0]);
       const z = matrix.slice(1).map(row =>
         row.slice(1).map(value => parseFloat(value))
       );
@@ -343,6 +363,8 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
       ];
 
       Plotly.newPlot(plotName, [{
+        x: x,
+        y: y,
         z: z,
         type: 'heatmap',
         colorscale: colorScale,
@@ -357,16 +379,7 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
           text: titleText,
           font: { size: 18 }
         },
-        xaxis: {
-          title: { text: "Arm Length" }
-        },
-        yaxis: {
-          title: { text: "Gap Length" },
-          tickmode: "linear",
-          dtick: 2
-        },
-        template: "plotly_white",
-        shapes: BORDER_SHAPE
+        ...heatmapPlotSharedParameters(x)
       });
     }
   });
@@ -439,7 +452,9 @@ function renderHeatmapFromCSV(heatmapResults, id) {
   // Clear the plot (to get rid of the default on click)
   document.getElementById('plot3').innerHTML = "";
 
-  const matrix = heatmapResults.data.filter(row => row.length > 0);
+  const matrix = heatmapResults.data.filter(row => row.length > 1);
+  const x = matrix[0].slice(1);
+  const y = matrix.slice(1).map(row => row[0]);
   const zLog = matrix.slice(1).map(row =>
     row.slice(1).map(value => {
       const z = parseFloat(value);
@@ -455,6 +470,8 @@ function renderHeatmapFromCSV(heatmapResults, id) {
   ];
 
   Plotly.newPlot('plot3', [{
+    x: x,
+    y: y,
     z: zLog,
     type: 'heatmap',
     colorscale: colorScale,
@@ -469,15 +486,7 @@ function renderHeatmapFromCSV(heatmapResults, id) {
       text: `Heatmap for <i>${id}</i>`,
       font: { size: 18 }
     },
-    xaxis: {
-      title: { text: "Arm Length" }
-    },
-    yaxis: {
-      title: { text: "Gap Length" },
-      dtick: 2
-    },
-    template: "plotly_white",
-    shapes: BORDER_SHAPE
+    ...heatmapPlotSharedParameters(x)
   });
 }
 
