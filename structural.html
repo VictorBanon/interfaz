@@ -79,9 +79,7 @@
           </div>
 
           <!-- Dropdowns -->
-          <!-- Probably should not be hardcoded! -->
-          <!-- Probably should not be hardcoded! -->
-          <!-- Probably should not be hardcoded! -->
+          <!-- Probably should not be hardcoded! --> 
           <div class="dropdowns" style="display: flex; gap: 1rem;">
             <label>
               Taxon:
@@ -94,6 +92,14 @@
               Filter:
               <select id="filterDropdown">
                 <option value="Bacteria">Recent</option>
+              </select>
+            </label>
+
+            <label>
+              Graphique:
+              <select id="graphDropdown">
+                <option value="acp">ACP</option>
+                <option value="max">Maximun</option>
               </select>
             </label>
           </div>
@@ -109,8 +115,7 @@
           <div class="tabs" id ="tabs_top_right">
             <button class="tab-button" data-tab="ha">HA</button>
             <button class="tab-button" data-tab="hb">HB</button>
-            <button class="tab-button active" data-tab="hc">HC</button>
-            <button class="tab-button" data-tab="max">Max density</button>
+            <button class="tab-button active" data-tab="hc">HC</button> 
           </div>
           <!-- One Plot Container -->
           <div class="tab-content" style="display: flex;">

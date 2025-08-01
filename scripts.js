@@ -162,7 +162,7 @@ function renderPlotCard1(acpCSVPath) {
 
       results.data.forEach(row => {
         xValues.push(parseFloat(row.PC1));
-        yValues.push(parseFloat(row.PC2));
+        yValues.push(parseFloat(row.PC2)); 
         pointData.push(row);
       });
 
@@ -202,6 +202,133 @@ function renderPlotCard1(acpCSVPath) {
         renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
       });
 
+    }
+  });
+}
+
+function renderPlotCard1_max(acpCSVPath) {
+  Papa.parse(acpCSVPath, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      const xValues = [];
+      const yValues = [];
+      const zValues = [];
+      const pointData = [];
+
+      const colorScale = [
+        [0.0, "blue"],
+        [0.333, "white"],
+        [0.666, "red"],
+        [1.0, "black"]
+      ]; 
+
+      results.data.forEach(row => {
+        xValues.push(parseFloat(row.size));
+        yValues.push(parseFloat(row.gap));
+        const z = parseFloat(row.z);
+        const logZ = Math.log10(z > 0 ? z : 1e-6); // avoid log(0) or negative values
+
+        zValues.push(logZ);
+        pointData.push(row);
+      });  
+
+            
+      const hoverLabels = pointData.map(row =>
+        `size: ${row.size}<br>gap: ${row.gap}<br>value: ${row.z}<br>ID: ${row.ID}`
+      );
+      var trace1 = { 
+        x: xValues, 
+        y: yValues, 
+        mode: 'markers', 
+        name: 'points', 
+        text: hoverLabels,
+        marker: {  
+          size: 20,  
+          cmin: -1,
+          cmax: 2,
+          color: zValues,
+          colorscale: colorScale,
+        }, 
+        type: 'scatter' 
+      }; 
+
+      var trace2 = { 
+        x: xValues, 
+        y: yValues, 
+        name: 'density', 
+        ncontours: 20, 
+        colorscale: "Greys", 
+        showscale: false, 
+        type: 'histogram2dcontour' 
+      };
+
+      var trace3 = {
+
+        x: xValues, 
+        name: 'x density', 
+        marker: {color: 'rgba(4, 92, 48, 1)'}, 
+        yaxis: 'y2', 
+        type: 'histogram' 
+      };
+
+      var trace4 = { 
+        y: yValues, 
+        name: 'y density', 
+        marker: {color: 'rgba(6, 81, 131, 1)'}, 
+        xaxis: 'x2', 
+        type: 'histogram' 
+      };
+
+      var data = [trace2,trace1, trace3, trace4];
+
+      var layout = { 
+        xaxis: { range: [3, 20], title: 'Arm Length' },
+        yaxis: { range: [0, 20], title: 'Gap Length' },
+        showlegend: false, 
+        autosize: true,  
+        margin: {t: 50}, 
+        hovermode: 'closest', 
+        bargap: 0, 
+        xaxis: { 
+          domain: [0, 0.85], 
+          showgrid: false, 
+          zeroline: false 
+        },
+
+        yaxis: { 
+          domain: [0, 0.85], 
+          showgrid: false, 
+          zeroline: false 
+        },
+
+        xaxis2: { 
+          domain: [0.85, 1], 
+          showgrid: false, 
+          zeroline: false 
+        },
+
+        yaxis2: { 
+          domain: [0.85, 1], 
+          showgrid: false, 
+          zeroline: false 
+        }
+
+      };
+
+      Plotly.newPlot('plot1', data, layout);
+      
+
+      // Add click handler to card1 that updates plot3
+      document.getElementById('plot1').on('plotly_click', function(eventData) {
+        const clickedRow = pointData[eventData.points[0].pointIndex];
+        const id = clickedRow.ID;
+        const idReplicon = clickedRow["ID-replicon"];
+        const { tabLeftValue, tabRightValue } = getCurrentSelections();
+        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
+
+        renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
+      });
     }
   });
 }
@@ -255,7 +382,7 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
 // Top-left
 function buildPlotCard1() {
   // console.log("[BPC1] called buildPlotCard1");
-  const { tabLeftValue, tabRightValue, categoryValue, filterValue } = getCurrentSelections();
+  const { tabLeftValue, tabRightValue, categoryValue, filterValue,graphValue } = getCurrentSelections();
 
   findFilePathFromJSON(filterValue).then(pathArray => {
     if (!pathArray) {
@@ -266,13 +393,20 @@ function buildPlotCard1() {
     const folderPath = pathArray.join("/"); // This is not the whole path!
     // console.log(`folderPath=${folderPath} found with filterValue=${filterValue}.`);
 
-    const rootPath = `${DATA_DIR}/philogenie/${folderPath}`;
-    const acpCSVPath = `${rootPath}/acp_${tabLeftValue}.csv`;
-    renderPlotCard1(acpCSVPath);
+    const rootPath = `${DATA_DIR}/philogenie/${folderPath}`; 
 
-    const parameters = [categoryValue, filterValue, tabRightValue, tabLeftValue]
+    const parameters = [tabRightValue,tabLeftValue,filterValue]
       .map(String)
       .join("_");
+
+    const acpCSVPath = `${rootPath}/${graphValue}_${parameters}.csv`; 
+
+    if (graphValue === "acp") {
+      renderPlotCard1(acpCSVPath);
+    }
+    if (graphValue === "max") {
+      renderPlotCard1_max(acpCSVPath);
+    }
     const acp1CSVPath = `${rootPath}/PC0_${parameters}.csv`
     const acp2CSVPath = `${rootPath}/PC1_${parameters}.csv`
 
@@ -365,15 +499,18 @@ function getCurrentSelections() {
 
   const categoryDropdown = document.getElementById('categoryDropdown');
   const filterDropdown = document.getElementById('filterDropdown');
+  const graphDropdown = document.getElementById('graphDropdown');
 
   const categoryValue = categoryDropdown.value;
   const filterValue = filterDropdown.value;
+  const graphValue = graphDropdown.value;
 
   const selections = {
     tabLeftValue,
     tabRightValue,
     categoryValue,
-    filterValue
+    filterValue,
+    graphValue
   };
 
   // console.log('Current Selections:', selections);
@@ -559,6 +696,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     buildPlotCard1();
   });
   document.getElementById('filterDropdown').addEventListener('change', function() {
+    buildPlotCard1();
+  });
+  document.getElementById('graphDropdown').addEventListener('change', function() {
     buildPlotCard1();
   });
 
