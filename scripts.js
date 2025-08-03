@@ -14,6 +14,8 @@ function capitalize(s) {
 }
 
 const DATA_DIR = "data";
+const TAXONOMY_VALUES_PATH = `${DATA_DIR}/taxonomy_values.json`;
+const STRUCTURE_PATH = `${DATA_DIR}/structure.json`
 
 const TAXONOMIC_ORDER = [
   "kingdom",
@@ -28,6 +30,18 @@ const TAXONOMIC_ORDER_EXPANDED = [
   ...TAXONOMIC_ORDER,
   "id",
   "id-replicon"
+];
+
+const COLOR_SCALE_3 = [
+  [0.0, "blue"],
+  [0.5, "white"],
+  [1.0, "red"]
+];
+const COLOR_SCALE_4 = [
+  [0.0, "blue"],
+  [0.333, "white"],
+  [0.666, "red"],
+  [1.0, "black"]
 ];
 
 const BORDER_SHAPE = [
@@ -75,7 +89,7 @@ async function buildDropdownsCard1() {
   const categoryDropdown = document.getElementById("categoryDropdown");
   const filterDropdown = document.getElementById("filterDropdown");
 
-  fetch(`${DATA_DIR}/taxonomy_values.json`)
+  fetch(TAXONOMY_VALUES_PATH)
     .then(response => response.json())
     .then(data => {
       const taxonKeys = Object.keys(data);
@@ -115,11 +129,6 @@ async function buildDropdownsCard1() {
         categoryDropdown.value = taxonKeys[0];
         categoryDropdown.dispatchEvent(new Event('change'));
       }
-    })
-    .catch(err => {
-      const msg = "Error loading taxonomy_values.json"
-      console.error(msg, err);
-      alert(msg);
     });
 }
 
@@ -127,24 +136,19 @@ async function buildDropdownsCard1() {
 function findFilePath(tree, target, path = []) {
   for (const key in tree) {
     const newPath = [...path, key];
-    if (key === target) {
-      return newPath;
-    }
+    if (key === target) return newPath;
     const result = findFilePath(tree[key], target, newPath);
     if (result) return result;
   }
-  return null;
 }
 
 async function findFilePathFromJSON(target) {
-  return fetch(`${DATA_DIR}/structure.json`)
+  return fetch(STRUCTURE_PATH)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       return response.json();
     })
-    .then(tree => {
-      return findFilePath(tree, target);
-    })
+    .then(tree => findFilePath(tree, target))
     .catch(err => {
       console.error("Failed to load or parse structure.json:", err);
       return null;
@@ -179,7 +183,6 @@ function renderPlotCard1(acpCSVPath) {
         hoverinfo: 'text',
         marker: { size: 10 }
       }], {
-        title: 'ACP',
         // left, right etc. margins
         margin: {
           l: 0,
@@ -187,8 +190,6 @@ function renderPlotCard1(acpCSVPath) {
           t: 30,
           b: 0
         },
-      }, {
-        responsive: true
       });
 
       // Add click handler to card1 that updates plot3
@@ -216,13 +217,6 @@ function renderPlotCard1Max(acpCSVPath) {
       const zValues = [];
       const pointData = [];
 
-      const colorScale = [
-        [0.0, "blue"],
-        [0.333, "white"],
-        [0.666, "red"],
-        [1.0, "black"]
-      ];
-
       results.data.forEach(row => {
         xValues.push(parseFloat(row.size));
         yValues.push(parseFloat(row.gap));
@@ -247,7 +241,7 @@ function renderPlotCard1Max(acpCSVPath) {
           cmin: -1,
           cmax: 2,
           color: zValues,
-          colorscale: colorScale,
+          colorscale: COLOR_SCALE_4,
         },
         type: 'scatter'
       };
@@ -346,6 +340,11 @@ function heatmapPlotSharedParameters(x) {
 
 // Top-right
 function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
+  // Clear the html (to get rid of the not found message if any)
+  // TODO: Finish!
+  const plot2 = document.getElementById('plot2');
+  if (plot2) plot2.innerHTML = "";
+
   Papa.parse(acpCSVPathPlot2, {
     download: true,
     complete: function(results) {
@@ -356,18 +355,14 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
         row.slice(1).map(value => parseFloat(value))
       );
 
-      const colorScale = [
-        [0.0, "blue"],
-        [0.5, "white"],
-        [1.0, "red"]
-      ];
+
 
       Plotly.newPlot(plotName, [{
         x: x,
         y: y,
         z: z,
         type: 'heatmap',
-        colorscale: colorScale,
+        colorscale: COLOR_SCALE_3,
         zmin: -1,
         zmax: 1,
         colorbar: {
@@ -462,19 +457,12 @@ function renderHeatmapFromCSV(heatmapResults, id) {
     })
   );
 
-  const colorScale = [
-    [0.0, "blue"],
-    [0.333, "white"],
-    [0.666, "red"],
-    [1.0, "black"]
-  ];
-
   Plotly.newPlot('plot3', [{
     x: x,
     y: y,
     z: zLog,
     type: 'heatmap',
-    colorscale: colorScale,
+    colorscale: COLOR_SCALE_4,
     zmin: -1,
     zmax: 2,
     colorbar: {
@@ -664,8 +652,6 @@ function buildTaxonomyCard() {
   });
 }
 
-
-
 document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
   button.addEventListener('click', function() {
     console.log("Top left tab clicked — rebuilding Plot Card 1");
@@ -695,15 +681,9 @@ document.addEventListener("DOMContentLoaded", async function() {
   await buildDropdownsCard1();
 
   // These two should go into buildDropdownsCard1
-  document.getElementById('categoryDropdown').addEventListener('change', function() {
-    buildPlotCard1();
-  });
-  document.getElementById('filterDropdown').addEventListener('change', function() {
-    buildPlotCard1();
-  });
-  document.getElementById('graphDropdown').addEventListener('change', function() {
-    buildPlotCard1();
-  });
+  document.getElementById('categoryDropdown').addEventListener('change', buildPlotCard1);
+  document.getElementById('filterDropdown').addEventListener('change', buildPlotCard1);
+  document.getElementById('graphDropdown').addEventListener('change', buildPlotCard1);
 
   buildPlotCard1();
   buildPlotCard3();
