@@ -197,7 +197,7 @@ function renderPlotCard1(acpCSVPath) {
         const idReplicon = clickedRow.ID;
         const id = idReplicon.replace(clickedRow.Replicons_type + "_", "");
         const { tabLeftValue, tabRightValue } = getCurrentSelections();
-        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
+        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_ratio_cod_vs_non_6mer.csv`;
 
         renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
       });
@@ -395,11 +395,11 @@ function buildPlotCard1() {
 
     const rootPath = `${DATA_DIR}/philogenie/${folderPath}`; 
 
-    const parameters = [tabRightValue,tabLeftValue,filterValue]
+    const parameters = [filterValue]
       .map(String)
       .join("_");
 
-    const acpCSVPath = `${rootPath}/${graphValue}_${parameters}.csv`; 
+    const acpCSVPath = `${rootPath}/${graphValue}_kmer_${parameters}.csv`; 
 
     if (graphValue === "acp") {
       renderPlotCard1(acpCSVPath);
@@ -407,8 +407,8 @@ function buildPlotCard1() {
     if (graphValue === "max") {
       renderPlotCard1_max(acpCSVPath);
     }
-    const acp1CSVPath = `${rootPath}/PC0_${parameters}.csv`
-    const acp2CSVPath = `${rootPath}/PC1_${parameters}.csv`
+    const acp1CSVPath = `${rootPath}/PC0_ratio_cod_vs_non_cod_${parameters}.csv`
+    const acp2CSVPath = `${rootPath}/PC1_ratio_cod_vs_non_cod_${parameters}.csv`
 
     // Check that path exists and display notFoundError in case of failure!
     function checkAndRender(csvPath, elementId, plotLabel) {
@@ -434,6 +434,7 @@ function buildPlotCard1() {
 function renderHeatmapFromCSVPathAndId(heatmapCSVPath, id) {
   Papa.parse(heatmapCSVPath, {
     download: true,
+    header: true,
     complete: function(heatmapResults) {
       renderHeatmapFromCSV(heatmapResults, id);
     },
@@ -441,50 +442,159 @@ function renderHeatmapFromCSVPathAndId(heatmapCSVPath, id) {
 }
 
 // Bottom-left
-function renderHeatmapFromCSV(heatmapResults, id) {
-  // Clear the plot (to get rid of the default on click)
-  document.getElementById('plot3').innerHTML = "";
+function renderHeatmapFromCSV(results, id) {
+  document.getElementById('plot3').innerHTML = ""; 
+    
+  const colors = {
+    "6-mer": "#023047",
+    "Inverted repeat": "#219ebc",
+    "Palindromes": "#ffb703"
+  };  
+  const df_plot = results.data.filter(row => !isNaN(row.cod) && !isNaN(row.non));
+  // Get unique categories
+  const categories = [...new Set(df_plot.map(row => row.color))];
 
-  const matrix = heatmapResults.data.filter(row => row.length > 0);
-  const zLog = matrix.slice(1).map(row =>
-    row.slice(1).map(value => {
-      const z = parseFloat(value);
-      return z > 0 ? Math.log10(z) : -1;
-    })
-  );
+  const traces = [];
 
-  const colorScale = [
-    [0.0, "blue"],
-    [0.333, "white"],
-    [0.666, "red"],
-    [1.0, "black"]
-  ];
+  categories.forEach(category => {
+    const cat_data = df_plot.filter(row => row.color === category);
+    const x = cat_data.map(d => parseFloat(d.cod));
+    const y = cat_data.map(d => parseFloat(d.non));
+    const hoverText = cat_data.map(d => d.Item);
 
-  Plotly.newPlot('plot3', [{
-    z: zLog,
-    type: 'heatmap',
-    colorscale: colorScale,
-    zmin: -1,
-    zmax: 2,
-    colorbar: {
-      tickvals: [-1, 0, 1, 2],
-      ticktext: ["10⁻¹", "10⁰", "10¹", "10²"],
-    }
-  }], {
-    title: {
-      text: `Heatmap for <i>${id}</i>`,
-      font: { size: 18 }
+    // Scatter points
+    traces.push({
+      type: 'scatter',
+      mode: 'markers',
+      name: category,
+      x,
+      y,
+      text: hoverText,
+      marker: { color: colors[category], opacity: 0.7 },
+      xaxis: 'x',
+      yaxis: 'y'
+    });
+
+    // Horizontal histogram (top)
+    traces.push({
+      type: 'histogram',
+      name: `${category} (x)`,
+      x,
+      marker: { color: colors[category] },
+      opacity: 0.5,
+      showlegend: false,
+      histnorm: 'probability density',
+      xaxis: 'x2',
+      yaxis: 'y2'
+    });
+
+    // Vertical histogram (right)
+    traces.push({
+      type: 'histogram',
+      name: `${category} (y)`,
+      y,
+      marker: { color: colors[category] },
+      opacity: 0.5,
+      showlegend: false,
+      histnorm: 'probability density',
+      xaxis: 'x3',
+      yaxis: 'y3'
+    });
+  });
+
+  // Add reference dashed lines at ±1
+  [-1, 1].forEach(val => {
+    traces.push({
+      type: 'scatter',
+      mode: 'lines',
+      x: [val, val],
+      y: [-4, 4],
+      line: { color: 'black', dash: 'dash' },
+      showlegend: false,
+      xaxis: 'x',
+      yaxis: 'y'
+    });
+    traces.push({
+      type: 'scatter',
+      mode: 'lines',
+      x: [-4, 4],
+      y: [val, val],
+      line: { color: 'black', dash: 'dash' },
+      showlegend: false,
+      xaxis: 'x',
+      yaxis: 'y'
+    });
+  });
+
+  // Add red diagonal
+  traces.push({
+    type: 'scatter',
+    mode: 'lines',
+    x: [-4, 4],
+    y: [-4, 4],
+    line: { color: 'red', dash: 'solid' },
+    name: 'Diagonal',
+    xaxis: 'x',
+    yaxis: 'y'
+  });
+
+  // Layout
+  const layout = { 
+    margin: {
+      l: 0,
+      r: 0,
+      t: 30,
+      b: 0
+    },
+    grid: {
+      rows: 2,
+      columns: 2,
+      pattern: 'independent',
+      roworder: 'top to bottom'
     },
     xaxis: {
-      title: { text: "Arm Length" }
+      domain: [0, 0.8],
+      range: [-4, 4],
+      tickvals: [-4, -3, -2, -1, 0, 1, 2, 3, 4],
+      showgrid: true,
+      gridcolor: 'lightgray'
     },
     yaxis: {
-      title: { text: "Gap Length" },
-      dtick: 2
+      domain: [0, 0.8],
+      range: [-4, 4],
+      tickvals: [-4, -3, -2, -1, 0, 1, 2, 3, 4],
+      showgrid: true,
+      gridcolor: 'lightgray'
     },
-    template: "plotly_white",
-    shapes: BORDER_SHAPE
-  });
+    xaxis2: {
+      domain: [0, 0.8],
+      range: [-4, 4],
+      anchor: 'y2',
+      showgrid: false
+    },
+    yaxis2: {
+      domain: [0.8, 1.0], 
+      anchor: 'x2',
+      showgrid: false
+    },
+    xaxis3: {
+      domain: [0.8, 1.0], 
+      anchor: 'y3',
+      showgrid: false
+    },
+    yaxis3: {
+      domain: [0, 0.8],
+      range: [-4, 4],
+      anchor: 'x3',
+      showgrid: false
+    },
+    barmode: 'overlay', 
+    showlegend: true,
+    template: 'simple_white'
+  };
+
+  // Plot it
+  Plotly.newPlot('plot3', traces, layout);
 }
 
 // get all important variables
@@ -654,7 +764,7 @@ function buildTaxonomyCard() {
           const idReplicon = rowData[8];
           const id = rowData[7];
           const { tabLeftValue, tabRightValue } = getCurrentSelections();
-          const heatmapPath = `${DATA_DIR}/${String(id)}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
+          const heatmapPath = `${DATA_DIR}/${String(id)}/analysis/${idReplicon}_ratio_cod_vs_non_6mer.csv`;
           renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
         });
       });
