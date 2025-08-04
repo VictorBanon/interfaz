@@ -1,61 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Plotly Heatmap with Hover</title>
-  <!-- Plotly -->
-  <script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
+  <title>Dendrograma Taxonómico</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    .node circle {
+      fill: steelblue;
+      cursor: pointer;
+    }
+    .node text {
+      font-size: 12px;
+    }
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 1.5px;
+    }
+  </style>
 </head>
 <body>
-  <div id="heatmap" style="width:700px; height:500px;"></div>
+  <h2>Dendrograma Interactivo desde CSV</h2>
+  <svg width="1000" height="800"></svg>
 
   <script>
-    const zValues = [
-      [0.1, 0.5, 0.9],
-      [0.3, 0.0, -0.5],
-      [0.8, -0.2, 0.4]
-    ];
+    const width = 1000;
+    const height = 800;
 
-    const textVals = zValues.map(row =>
-      row.map(val => val.toFixed(2))
-    );
+    const svg = d3.select("svg")
+      .append("g")
+      .attr("transform", "translate(40,40)");
 
-    const xLabels = ['Arm A', 'Arm B', 'Arm C'];
-    const yLabels = ['Gap 1', 'Gap 2', 'Gap 3'];
+    // Función para construir la jerarquía a partir del CSV plano
+    function buildHierarchy(data, levels) {
+      const root = { name: "root", children: [] };
 
-    const colorScale = [
-      [0.0, "blue"],
-      [0.5, "white"],
-      [1.0, "red"]
-    ];
+      data.forEach(row => {
+        let current = root;
+        levels.forEach(level => {
+          const value = row[level];
+          if (!value) return;
 
-    Plotly.newPlot("heatmap", [{
-      z: zValues,
-      text: textVals,
-      x: xLabels,
-      y: yLabels,
-      type: "heatmap",
-      colorscale: colorScale,
-      zmin: -1,
-      zmax: 1,
-      hovertemplate: "Value: %{text}<br>Gap: %{y}<br>Arm: %{x}<extra></extra>",
-      colorbar: {
-        tickvals: [-1, 0, 1],
-        ticktext: [-1, 0, 1]
-      }
-    }], {
-      title: {
-        text: "Hover Heatmap Example",
-        font: { size: 18 }
-      },
-      xaxis: {
-        title: "Arm Length"
-      },
-      yaxis: {
-        title: "Gap Length"
-      },
-      hovermode: "closest",
-      template: "plotly_white"
+          let child = current.children.find(d => d.name === value);
+          if (!child) {
+            child = { name: value, children: [] };
+            current.children.push(child);
+          }
+          current = child;
+        });
+      });
+
+      return root;
+    }
+
+    // Carga el CSV y crea el dendrograma
+    d3.csv("taxonomy.csv").then(data => {
+      const levels = Object.keys(data[0]);
+      const hierarchyData = buildHierarchy(data, levels);
+
+      // Creamos la raíz real a partir de Animalia, etc.
+      const root = d3.hierarchy(hierarchyData.children[0]);
+      const treeLayout = d3.tree().size([height - 100, width - 200]);
+      treeLayout(root);
+
+      // Dibujamos las líneas (links)
+      svg.selectAll(".link")
+        .data(root.links())
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr("d", d3.linkHorizontal()
+          .x(d => d.y)
+          .y(d => d.x)
+        );
+
+      // Dibujamos los nodos
+      const node = svg.selectAll(".node")
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", d => `translate(${d.y},${d.x})`);
+
+      node.append("circle")
+        .attr("r", 5);
+
+      node.append("text")
+        .attr("dy", 3)
+        .attr("x", d => d.children ? -10 : 10)
+        .style("text-anchor", d => d.children ? "end" : "start")
+        .text(d => d.data.name);
     });
   </script>
 </body>
