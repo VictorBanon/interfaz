@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bacteria Info Viewer (NCBI)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      cursor: pointer;
+      color: darkgreen;
+      margin: 5px 0;
+    }
+    li:hover {
+      text-decoration: underline;
+    }
+    #content {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      background: #f4fdf4;
+    }
+  </style>
+</head>
+<body>
+  <h2>Select a Bacterium</h2>
+  <ul id="bacteria-list">
+    <li data-name="Escherichia coli">E. coli</li>
+    <li data-name="Salmonella">Salmonella</li>
+    <li data-name="Bacillus subtilis">Bacillus subtilis</li>
+    <li data-name="Staphylococcus aureus">Staphylococcus aureus</li>
+    <li data-name="Mycobacterium tuberculosis">Mycobacterium tuberculosis</li>
+    <li data-name="Pseudomonas aeruginosa">Pseudomonas aeruginosa</li>
+    <li data-name="Lactobacillus">Lactobacillus</li>
+    <li data-name="Clostridium botulinum">Clostridium botulinum</li>
+    <li data-name="Helicobacter pylori">Helicobacter pylori</li>
+    <li data-name="Vibrio cholerae">Vibrio cholerae</li>
+  </ul>
+
+  <div id="content">
+    <em>Select a bacterium from the list to see information from NCBI Taxonomy.</em>
+  </div>
+
+  <script>
+    const list = document.getElementById('bacteria-list');
+    const content = document.getElementById('content');
+
+    list.addEventListener('click', function(e) {
+      if (e.target.tagName === 'LI') {
+        const name = e.target.getAttribute('data-name');
+
+        content.innerHTML = `<p><em>Searching NCBI for "${name}"...</em></p>`;
+
+        // Step 1: Search for taxonomy ID using esearch
+        fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=taxonomy&term=${encodeURIComponent(name)}&retmode=json`)
+          .then(response => response.json())
+          .then(data => {
+            const idList = data.esearchresult.idlist;
+            if (idList.length === 0) {
+              throw new Error('No results found in NCBI Taxonomy.');
+            }
+            const taxId = idList[0];
+
+            // Step 2: Get taxonomy summary with esummary
+            return fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=taxonomy&id=${taxId}&retmode=json`);
+          })
+          .then(response => response.json())
+          .then(data => {
+            const taxId = Object.keys(data.result).find(k => k !== 'uids');
+            const summary = data.result[taxId];
+
+            content.innerHTML = `
+              <h3>${summary.scientificname}</h3>
+              <p><strong>Rank:</strong> ${summary.rank}</p>
+              <p><strong>Division:</strong> ${summary.division}</p>
+              <p><strong>Genetic Code:</strong> ${summary.geneticcode?.name || "N/A"}</p>
+              <p><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${summary.uid}" target="_blank">
+                View on NCBI
+              </a></p>
+            `;
+          })
+          .catch(err => {
+            content.innerHTML = `<p>Error: ${err.message}</p>`;
+          });
+      }
+    });
+  </script>
+</body>
+</html>

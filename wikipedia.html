@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bacteria Info Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      cursor: pointer;
+      color: steelblue;
+      margin: 5px 0;
+    }
+    li:hover {
+      text-decoration: underline;
+    }
+    #content {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Select a Bacterium</h2>
+  <ul id="bacteria-list">
+    <li data-title="Escherichia_coli">E. coli</li>
+    <li data-title="Salmonella">Salmonella</li>
+    <li data-title="Bacillus_subtilis">Bacillus subtilis</li>
+    <li data-title="Staphylococcus_aureus">Staphylococcus aureus</li>
+    <li data-title="Mycobacterium_tuberculosis">Mycobacterium tuberculosis</li>
+    <li data-title="Pseudomonas_aeruginosa">Pseudomonas aeruginosa</li>
+    <li data-title="Lactobacillus">Lactobacillus</li>
+    <li data-title="Clostridium_botulinum">Clostridium botulinum</li>
+    <li data-title="Helicobacter_pylori">Helicobacter pylori</li>
+    <li data-title="Vibrio_cholerae">Vibrio cholerae</li>
+  </ul>
+
+  <div id="content">
+    <em>Select a bacterium from the list to see information from Wikipedia.</em>
+  </div>
+
+  <script>
+    const list = document.getElementById('bacteria-list');
+    const content = document.getElementById('content');
+
+    list.addEventListener('click', function(e) {
+      if (e.target.tagName === 'LI') {
+        const title = e.target.getAttribute('data-title');
+
+        content.innerHTML = '<p><em>Loading Wikipedia summary...</em></p>';
+
+        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Wikipedia article not found.');
+            }
+            return response.json();
+          })
+          .then(data => {
+            content.innerHTML = `
+              <h3>${data.title}</h3>
+              <p>${data.extract}</p>
+              <p><a href="https://en.wikipedia.org/wiki/${title}" target="_blank">Read more on Wikipedia</a></p>
+            `;
+          })
+          .catch(err => {
+            content.innerHTML = `<p>Error: ${err.message}</p>`;
+          });
+      }
+    });
+  </script>
+</body>
+</html>

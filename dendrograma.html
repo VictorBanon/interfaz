@@ -14,6 +14,8 @@
     }
     .node text {
       font-size: 12px;
+      opacity: 0; /* Ocultar textos por defecto */
+      pointer-events: none;
     }
     .link {
       fill: none;
@@ -34,7 +36,6 @@
       .append("g")
       .attr("transform", "translate(40,40)");
 
-    // Función para construir la jerarquía a partir del CSV plano
     function buildHierarchy(data, levels) {
       const root = { name: "root", children: [] };
 
@@ -56,17 +57,17 @@
       return root;
     }
 
-    // Carga el CSV y crea el dendrograma
-    d3.csv("taxonomy.csv").then(data => {
-      const levels = Object.keys(data[0]);
+    d3.csv("./data/taxonomy.csv").then(data => {
+      const levels = Object.keys(data[0]).filter(col => col !== "ID-replicon");
       const hierarchyData = buildHierarchy(data, levels);
-
-      // Creamos la raíz real a partir de Animalia, etc.
       const root = d3.hierarchy(hierarchyData.children[0]);
+
       const treeLayout = d3.tree().size([height - 100, width - 200]);
       treeLayout(root);
 
-      // Dibujamos las líneas (links)
+      const allNodes = root.descendants();
+
+      // Dibujar links
       svg.selectAll(".link")
         .data(root.links())
         .enter()
@@ -77,22 +78,54 @@
           .y(d => d.x)
         );
 
-      // Dibujamos los nodos
+      // Dibujar nodos
       const node = svg.selectAll(".node")
-        .data(root.descendants())
+        .data(allNodes)
         .enter()
         .append("g")
         .attr("class", "node")
-        .attr("transform", d => `translate(${d.y},${d.x})`);
+        .attr("transform", d => `translate(${d.y},${d.x})`)
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut);
 
       node.append("circle")
         .attr("r", 5);
 
       node.append("text")
-        .attr("dy", 3)
-        .attr("x", d => d.children ? -10 : 10)
-        .style("text-anchor", d => d.children ? "end" : "start")
-        .text(d => d.data.name);
+        .attr("dy", "-0.8em") // Coloca el texto un poco más arriba
+        .attr("text-anchor", "middle")
+        .style("font-size", "8px") // Tamaño de letra reducido
+        .text(d => d.data.name.length > 20 
+          ? d.data.name.slice(0, 20) + "…" 
+          : d.data.name);
+
+      // Mostrar textos de nodo + ancestros + descendientes
+      function handleMouseOver(event, d) {
+        const nodesToShow = new Set();
+
+        // Añadir nodo actual
+        nodesToShow.add(d);
+
+        // Añadir ancestros
+        let ancestor = d.parent;
+        while (ancestor) {
+          nodesToShow.add(ancestor);
+          ancestor = ancestor.parent;
+        }
+
+        // Añadir descendientes
+        d.descendants().forEach(desc => nodesToShow.add(desc));
+
+        // Mostrar textos de esos nodos
+        svg.selectAll(".node").select("text")
+          .style("opacity", n => nodesToShow.has(n) ? 1 : 0);
+      }
+
+      // Ocultar todos los textos
+      function handleMouseOut() {
+        svg.selectAll(".node").select("text")
+          .style("opacity", 0);
+      }
     });
   </script>
 </body>

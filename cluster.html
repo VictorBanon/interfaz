@@ -39,10 +39,6 @@
               <i class="fas fa-chart-line"></i> Structural Analysis
             </a>
           </li>
-          <div class="explanation-card">
-            <h4>Goals</h4>
-            <p>Here We explain how this dashboard works.</p>
-          </div> 
           <li>
             <a href="kmer.html" style="text-decoration: none; color: inherit;">
               <i class="fas fa-chart-line"></i> Kmer Analysis
@@ -53,11 +49,15 @@
               <i class="fas fa-chart-line"></i> Spatial Analysis
             </a>
           </li>
-          <li>
+          <li style="background-color: #354152;">
             <a href="cluster.html" style="text-decoration: none; color: inherit;">
               <i class="fas fa-chart-line"></i> Cluster Analysis
             </a>
           </li> 
+          <div class="explanation-card">
+            <h4>Goals</h4>
+            <p>Here We explain how this dashboard works.</p>
+          </div> 
         </ul>
         <div class="bottom-card">
           This card is at the bottom of the sidebar
@@ -98,8 +98,7 @@
             <label>
               Graph:
               <select id="graphDropdown">
-                <option value="acp">ACP</option>
-                <option value="max">Maximum</option>
+                <option value="taxonomic">Taxonomic</option> 
               </select>
             </label>
           </div>
@@ -112,10 +111,8 @@
       </div>
         <!-- Second card with tabs and plots -->
         <div class="card" id = "card_2">
-          <div class="tabs" id ="tabs_top_right">
-            <button class="tab-button" data-tab="ha">HA</button>
-            <button class="tab-button" data-tab="hb">HB</button>
-            <button class="tab-button active" data-tab="hc">HC</button> 
+          <div class="tabs" id ="tabs_top_right"> 
+            <button class="tab-button active" data-tab="compositional">Compositional</button> 
           </div>
           <!-- One Plot Container -->
           <div class="tab-content" style="display: flex;">
