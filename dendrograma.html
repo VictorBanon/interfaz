@@ -14,7 +14,6 @@
     }
     .node text {
       font-size: 12px;
-      opacity: 0; /* Ocultar textos por defecto */
       pointer-events: none;
     }
     .link {
@@ -66,10 +65,11 @@
       treeLayout(root);
 
       const allNodes = root.descendants();
+      const allLinks = root.links();
 
-      // Dibujar links
+      // Draw links
       svg.selectAll(".link")
-        .data(root.links())
+        .data(allLinks)
         .enter()
         .append("path")
         .attr("class", "link")
@@ -78,7 +78,7 @@
           .y(d => d.x)
         );
 
-      // Dibujar nodos
+      // Draw nodes
       const node = svg.selectAll(".node")
         .data(allNodes)
         .enter()
@@ -92,39 +92,48 @@
         .attr("r", 5);
 
       node.append("text")
-        .attr("dy", "-0.8em") // Coloca el texto un poco más arriba
+        .attr("dy", "-0.8em")
         .attr("text-anchor", "middle")
-        .style("font-size", "8px") // Tamaño de letra reducido
+        .style("font-size", "8px")
+        .style("opacity", 1) // visible by default
         .text(d => d.data.name.length > 20 
           ? d.data.name.slice(0, 20) + "…" 
           : d.data.name);
 
-      // Mostrar textos de nodo + ancestros + descendientes
+      // Highlight branch on hover
       function handleMouseOver(event, d) {
         const nodesToShow = new Set();
 
-        // Añadir nodo actual
+        // Current node
         nodesToShow.add(d);
 
-        // Añadir ancestros
+        // Ancestors
         let ancestor = d.parent;
         while (ancestor) {
           nodesToShow.add(ancestor);
           ancestor = ancestor.parent;
         }
 
-        // Añadir descendientes
+        // Descendants
         d.descendants().forEach(desc => nodesToShow.add(desc));
 
-        // Mostrar textos de esos nodos
+        // Fade non-branch labels
         svg.selectAll(".node").select("text")
-          .style("opacity", n => nodesToShow.has(n) ? 1 : 0);
+          .style("opacity", n => nodesToShow.has(n) ? 1 : 0.1);
+
+        // Fade non-branch links
+        svg.selectAll(".link")
+          .style("stroke-opacity", link =>
+            nodesToShow.has(link.source) && nodesToShow.has(link.target) ? 1 : 0.1
+          );
       }
 
-      // Ocultar todos los textos
+      // Reset all styles
       function handleMouseOut() {
         svg.selectAll(".node").select("text")
-          .style("opacity", 0);
+          .style("opacity", 1);
+        svg.selectAll(".link")
+          .style("stroke-opacity", 1);
       }
     });
   </script>
