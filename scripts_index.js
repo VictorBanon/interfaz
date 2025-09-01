@@ -31,496 +31,176 @@ const TAXONOMIC_ORDER_EXPANDED = [
   "id",
   "id-replicon"
 ];
-
-const COLOR_SCALE_3 = [
-  [0.0, "blue"],
-  [0.5, "white"],
-  [1.0, "red"]
-];
-const COLOR_SCALE_4 = [
-  [0.0, "blue"],
-  [0.333, "white"],
-  [0.666, "red"],
-  [1.0, "black"]
-];
-
-const BORDER_SHAPE = [
-  { type: "line", x0: 0, y0: 1, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
-  { type: "line", x0: 0, y0: 0, x1: 1, y1: 0, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
-  { type: "line", x0: 0, y0: 0, x1: 0, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
-  { type: "line", x0: 1, y0: 0, x1: 1, y1: 1, xref: "paper", yref: "paper", line: { color: "black", width: 2 } },
-];
-
-// Simple utility for WIP features
-function renderNotFoundHTML(elementId) {
-  document.getElementById(elementId).innerHTML = `
-    <div style="
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-      font-size: 1.2em;">
-      <div style="font-size: 2em;">&#9888;</div>
-      <p>Data Not Found</p>
-    </div>
-  `;
-}
-
-const card1 = document.getElementById('card_1');
-const tabButton1 = card1.querySelectorAll('.tab-button');
-const card2 = document.getElementById('card_2');
-const tabButton2 = card2.querySelectorAll('.tab-button');
-
-// Tab switch click listeners for cards 1 and 2
-const tabButtons = [tabButton1, tabButton2];
-tabButtons.forEach(buttonGroup => {
-  buttonGroup.forEach(button => {
-    button.addEventListener('click', () => {
-      buttonGroup.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-    });
-  });
-});
-
-// Top-left
-async function buildDropdownsCard1() {
-  const categoryDropdown = document.getElementById("categoryDropdown");
-  const filterDropdown = document.getElementById("filterDropdown");
-
-  fetch(TAXONOMY_VALUES_PATH)
-    .then(response => response.json())
-    .then(data => {
-      const taxonKeys = Object.keys(data);
-
-      categoryDropdown.innerHTML = '';
-      for (const taxon of taxonKeys) {
-        const option = document.createElement("option");
-        option.value = taxon;
-        option.textContent = taxon;
-        categoryDropdown.appendChild(option);
-      }
-
-      categoryDropdown.addEventListener("change", function() {
-        const selectedTaxon = categoryDropdown.value;
-        filterDropdown.innerHTML = "";
-
-        if (data[selectedTaxon]) {
-          const values = data[selectedTaxon];
-
-          values.forEach(val => {
-            const option = document.createElement("option");
-            option.value = val;
-            option.textContent = val;
-            filterDropdown.appendChild(option);
-          });
-
-          if (values.length === 1) {
-            filterDropdown.value = values[0];
-            filterDropdown.dispatchEvent(new Event("change"));
-          } else if (values.length > 1) {
-            filterDropdown.value = values[0];
-          }
-        }
-      });
-
-      if (taxonKeys.length > 0) {
-        categoryDropdown.value = taxonKeys[0];
-        categoryDropdown.dispatchEvent(new Event('change'));
-      }
-    });
-}
-
-// Recursive iteration
-function findFilePath(tree, target, path = []) {
-  for (const key in tree) {
-    const newPath = [...path, key];
-    if (key === target) return newPath;
-    const result = findFilePath(tree[key], target, newPath);
-    if (result) return result;
-  }
-}
-
-async function findFilePathFromJSON(target) {
-  return fetch(STRUCTURE_PATH)
-    .then(response => {
-      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-      return response.json();
-    })
-    .then(tree => findFilePath(tree, target))
-    .catch(err => {
-      console.error("Failed to load or parse structure.json:", err);
-      return null;
-    });
-}
-
-function renderPlotCard1(acpCSVPath) {
-  Papa.parse(acpCSVPath, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const xValues = [];
-      const yValues = [];
-      const pointData = [];
-
-      results.data.forEach(row => {
-        xValues.push(parseFloat(row.PC1));
-        yValues.push(parseFloat(row.PC2));
-        pointData.push(row);
-      });
-
-      const hoverLabels = pointData.map(row =>
-        `PC1: ${row.PC1}<br>PC2: ${row.PC2}<br>ID: ${row.ID}`
-      );
-
-      Plotly.newPlot('plot1', [{
-        type: 'scatter',
-        mode: 'markers',
-        x: xValues,
-        y: yValues,
-        text: hoverLabels,
-        hoverinfo: 'text',
-        marker: { size: 10 }
-      }], {
-        // left, right etc. margins
-        margin: {
-          l: 0,
-          r: 0,
-          t: 30,
-          b: 0
-        },
-      });
-
-      // Add click handler to card1 that updates plot3
-      document.getElementById('plot1').on('plotly_click', function(eventData) {
-        const clickedRow = pointData[eventData.points[0].pointIndex];
-        const idReplicon = clickedRow.ID;
-        const id = idReplicon.replace(clickedRow.Replicons_type + "_", "");
-        const {  tabRightValue } = getCurrentSelections();
-        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
-
-        renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
-      });
-
-    }
-  });
-}
-
-function renderPlotCard1Max(acpCSVPath) {
-  Papa.parse(acpCSVPath, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const xValues = [];
-      const yValues = [];
-      const zValues = [];
-      const pointData = [];
-
-      results.data.forEach(row => {
-        xValues.push(parseFloat(row.size));
-        yValues.push(parseFloat(row.gap));
-        const z = parseFloat(row.z);
-        const logZ = Math.log10(z > 0 ? z : 1e-6); // avoid log(0) or negative values
-
-        zValues.push(logZ);
-        pointData.push(row);
-      });
-
-      const hoverLabels = pointData.map(row =>
-        `size: ${row.size}<br>gap: ${row.gap}<br>value: ${row.z}<br>ID: ${row.ID}`
-      );
-      var trace1 = {
-        x: xValues,
-        y: yValues,
-        mode: 'markers',
-        name: 'points',
-        text: hoverLabels,
-        marker: {
-          size: 20,
-          cmin: -1,
-          cmax: 2,
-          color: zValues,
-          colorscale: COLOR_SCALE_4,
-        },
-        type: 'scatter'
-      };
-
-      var trace2 = {
-        x: xValues,
-        y: yValues,
-        name: 'density',
-        ncontours: 20,
-        colorscale: "Greys",
-        showscale: false,
-        type: 'histogram2dcontour'
-      };
-
-      var trace3 = {
-        x: xValues,
-        name: 'x density',
-        marker: { color: 'rgba(4, 92, 48, 1)' },
-        yaxis: 'y2',
-        type: 'histogram'
-      };
-
-      var trace4 = {
-        y: yValues,
-        name: 'y density',
-        marker: { color: 'rgba(6, 81, 131, 1)' },
-        xaxis: 'x2',
-        type: 'histogram'
-      };
-
-      var data = [trace2, trace1, trace3, trace4];
-
-      var layout = {
-        xaxis: { range: [3, 20], title: 'Arm Length' },
-        yaxis: { range: [0, 20], title: 'Gap Length' },
-        showlegend: false,
-        autosize: true,
-        margin: { t: 50 },
-        hovermode: 'closest',
-        bargap: 0,
-        xaxis: {
-          domain: [0, 0.85],
-          showgrid: false,
-          zeroline: false
-        },
-        yaxis: {
-          domain: [0, 0.85],
-          showgrid: false,
-          zeroline: false
-        },
-        xaxis2: {
-          domain: [0.85, 1],
-          showgrid: false,
-          zeroline: false
-        },
-        yaxis2: {
-          domain: [0.85, 1],
-          showgrid: false,
-          zeroline: false
-        }
-      };
-
-      Plotly.newPlot('plot1', data, layout);
-
-      // Add click handler to card1 that updates plot3
-      document.getElementById('plot1').on('plotly_click', function(eventData) {
-        const clickedRow = pointData[eventData.points[0].pointIndex];
-        const id = clickedRow.ID;
-        const idReplicon = clickedRow["ID-replicon"];
-        const {  tabRightValue } = getCurrentSelections();
-        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
-
-        renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
-      });
-    }
-  });
-}
-
-// Shared across all heatmaps
-function heatmapPlotSharedParameters(x) {
-  return {
-    xaxis: {
-      title: { text: "Arm Length" },
-      tickmode: 'linear',
-      tick0: x[0],
-      dtick: 5,
-    },
-    yaxis: {
-      title: { text: "Gap Length" },
-      dtick: 2
-    },
-    template: "plotly_white",
-    shapes: BORDER_SHAPE
-  }
-};
-
-// Top-right
-function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
-  // Clear the html (to get rid of the not found message if any)
-  // TODO: Finish!
-  const plot2 = document.getElementById('plot2');
-  if (plot2) plot2.innerHTML = "";
-
-  Papa.parse(acpCSVPathPlot2, {
-    download: true,
-    complete: function(results) {
-      const matrix = results.data.filter(row => row.length > 1);
-      const x = matrix[0].slice(1);
-      const y = matrix.slice(1).map(row => row[0]);
-      const z = matrix.slice(1).map(row =>
-        row.slice(1).map(value => parseFloat(value))
-      );
-
-
-
-      Plotly.newPlot(plotName, [{
-        x: x,
-        y: y,
-        z: z,
-        type: 'heatmap',
-        colorscale: COLOR_SCALE_3,
-        zmin: -1,
-        zmax: 1,
-        colorbar: {
-          tickvals: [-1, 0, 1],
-          ticktext: [-1, 0, 1],
-        }
-      }], {
-        title: {
-          text: titleText,
-          font: { size: 18 }
-        },
-        ...heatmapPlotSharedParameters(x)
-      });
-    }
-  });
-}
-
-// Top-left
-function buildPlotCard1() {
-  // console.log("[BPC1] called buildPlotCard1");
-  const {  tabRightValue, categoryValue, filterValue, graphValue } = getCurrentSelections();
-
-  findFilePathFromJSON(filterValue).then(pathArray => {
-    if (!pathArray) {
-      console.warn(`folderPath not found with filterValue=${filterValue}. Returning early.`);
-      return;
-    }
-
-    const folderPath = pathArray.join("/"); // This is not the whole path!
-    // console.log(`folderPath=${folderPath} found with filterValue=${filterValue}.`);
-
-    const rootPath = `${DATA_DIR}/philogenie/${folderPath}`;
-    const parameters = [tabRightValue, tabLeftValue, filterValue]
-      .map(String)
-      .join("_");
-    const acpCSVPath = `${rootPath}/${graphValue}_${parameters}.csv`;
-
-    switch (graphValue) {
-      case "acp":
-        renderPlotCard1(acpCSVPath);
-        break;
-      case "max":
-        renderPlotCard1Max(acpCSVPath);
-        break;
-    }
-
-    const acp1CSVPath = `${rootPath}/PC0_${parameters}.csv`
-    const acp2CSVPath = `${rootPath}/PC1_${parameters}.csv`
-
-    // Check that path exists and display notFoundError in case of failure!
-    function checkAndRender(csvPath, elementId, plotLabel) {
-      fetch(csvPath, { method: 'HEAD' })
-        .then(response => {
-          if (response.ok) {
-            renderPlotsCard2(csvPath, elementId, plotLabel);
-          } else {
-            console.warn(`CSV not found: ${csvPath}`);
-            renderNotFoundHTML(elementId);
-          }
-        })
-    }
-
-    checkAndRender(acp1CSVPath, "plot2_1", "PC1");
-    checkAndRender(acp2CSVPath, "plot2_2", "PC2");
-  }).catch(error => {
-    console.error("Error resolving pathArray:", error);
-  });
-}
-
-// Bottom-left
-function renderHeatmapFromCSVPathAndId(heatmapCSVPath, id) {
-  Papa.parse(heatmapCSVPath, {
-    download: true,
-    complete: function(heatmapResults) {
-      renderHeatmapFromCSV(heatmapResults, id);
-    },
-  });
-}
-
-// Bottom-left
-function renderHeatmapFromCSV(heatmapResults, id) {
-  // Clear the plot (to get rid of the default on click)
-  document.getElementById('plot3').innerHTML = "";
-
-  const matrix = heatmapResults.data.filter(row => row.length > 1);
-  const x = matrix[0].slice(1);
-  const y = matrix.slice(1).map(row => row[0]);
-  const zLog = matrix.slice(1).map(row =>
-    row.slice(1).map(value => {
-      const z = parseFloat(value);
-      return z > 0 ? Math.log10(z) : -1;
-    })
-  );
-
-  Plotly.newPlot('plot3', [{
-    x: x,
-    y: y,
-    z: zLog,
-    type: 'heatmap',
-    colorscale: COLOR_SCALE_4,
-    zmin: -1,
-    zmax: 2,
-    colorbar: {
-      tickvals: [-1, 0, 1, 2],
-      ticktext: ["10⁻¹", "10⁰", "10¹", "10²"],
-    }
-  }], {
-    title: {
-      text: `Heatmap for <i>${id}</i>`,
-      font: { size: 18 }
-    },
-    ...heatmapPlotSharedParameters(x)
-  });
-}
-
-// get all important variables
-function getCurrentSelections() { 
-  const activeTopRightTab = document.querySelector('#card_2 .tab-button.active');
  
-  // hc
-  const tabRightValue = activeTopRightTab.getAttribute('data-tab');
+ 
+ 
 
-  const categoryDropdown = document.getElementById('categoryDropdown');
-  const filterDropdown = document.getElementById('filterDropdown');
-  const graphDropdown = document.getElementById('graphDropdown');
+const list = document.getElementById('bacteria-list-NCBI');
+const content = document.getElementById('content');
 
-  const categoryValue = categoryDropdown.value;
-  const filterValue = filterDropdown.value;
-  const graphValue = graphDropdown.value;
+list.addEventListener('click', function(e) {
+  if (e.target.tagName === 'LI') {
+    const title = e.target.getAttribute('data-title');
 
-  const selections = { 
-    tabRightValue,
-    categoryValue,
-    filterValue,
-    graphValue
-  };
+    content.innerHTML = '<p><em>Loading Wikipedia summary...</em></p>';
 
-  // console.log('Current Selections:', selections);
-
-  return selections;
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Wikipedia article not found.');
+        }
+        return response.json();
+      })
+      .then(data => {
+        content.innerHTML = `
+          <h3>${data.title}</h3>
+          <p>${data.extract}</p>
+          <p><a href="https://en.wikipedia.org/wiki/${title}" target="_blank">Read more on Wikipedia</a></p>
+        `;
+      })
+      .catch(err => {
+        content.innerHTML = `<p>Error: ${err.message}</p>`;
+      });
+  }
+});
+function buildHierarchy(data, levels) {
+  const root = { name: "root", children: [] };
+  data.forEach(row => {
+    let current = root;
+    levels.forEach(level => {
+      const value = row[level];
+      if (!value) return;
+      let child = current.children.find(d => d.name === value);
+      if (!child) {
+        child = { name: value, children: [] };
+        current.children.push(child);
+      }
+      current = child;
+    });
+  });
+  return root;
 }
 
-// Bottom-left default
-function buildPlotCard3() {
-  document.getElementById('plot3').innerHTML = `
-    <div style="
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-      font-size: 1.2em;">
-      <div style="font-size: 2em;">&#8593;</div>
-      <p>Click on a chromosome to display</p>
-    </div>
-  `;
+function renderDendrogram() {
+  const card = document.getElementById("card_1");
+  const { width, height } = card.getBoundingClientRect();
+  const svg = d3.select("#taxonomy_dendrogram")
+    .attr("width", width)
+    .attr("height", height);
+  svg.selectAll("*").remove();
+
+  const g = svg.append("g");
+
+  const zoomBehavior = d3.zoom()
+    .scaleExtent([0.5, 5])
+    .on("zoom", (event) => {
+      g.attr("transform", event.transform);
+    });
+
+  svg.call(zoomBehavior);
+
+  d3.csv("./data/taxonomy.csv").then(data => {
+    const levels = Object.keys(data[0]).filter(col => col !== "ID-replicon");
+    const hierarchyData = buildHierarchy(data, levels);
+    let root = d3.hierarchy(hierarchyData.children[0]);
+    root.x0 = height / 2;
+    root.y0 = 0;
+
+    root.children.forEach(collapse);
+
+    const treeLayout = d3.tree().size([height - 100, width - 200]);
+
+    function collapse(d) {
+      if (d.children) {
+        d._children = d.children;
+        d._children.forEach(collapse);
+        d.children = null;
+      }
+    }
+
+    let i = 0;
+    function update(source) {
+      console.log("name:", source.data.name); 
+      treeLayout(root);
+      const nodes = root.descendants();
+      const links = root.links();
+
+      const node = g.selectAll(".node")
+        .data(nodes, d => d.id || (d.id = ++i));
+
+      const nodeEnter = node.enter().append("g")
+        .attr("class", "node")
+        .attr("transform", d => `translate(${source.y0},${source.x0})`)
+        .on("click", (event, d) => {
+          if (d.children) {
+            d._children = d.children;
+            d.children = null;
+          } else {
+            d.children = d._children;
+            d._children = null;
+          }
+          update(d);
+        });
+
+      nodeEnter.append("circle")
+        .attr("r", 5)
+        .style("fill", d => d._children ? "lightsteelblue" : "#fff");
+
+      nodeEnter.append("text")
+        .attr("dy", "-0.8em")
+        .attr("text-anchor", "middle")
+        .style("font-size", "8px")
+        .text(d => d.data.name.length > 20 
+          ? d.data.name.slice(0, 20) + "…" 
+          : d.data.name);
+
+      const nodeUpdate = nodeEnter.merge(node);
+      nodeUpdate.transition().duration(300)
+        .attr("transform", d => `translate(${d.y},${d.x})`);
+      nodeUpdate.select("circle")
+        .style("fill", d => d._children ? "lightsteelblue" : "#fff");
+
+      node.exit().transition().duration(300)
+        .attr("transform", d => `translate(${source.y},${source.x})`)
+        .remove();
+
+      const link = g.selectAll(".link")
+        .data(links, d => d.target.id);
+
+      link.enter().insert("path", "g")
+        .attr("class", "link")
+        .merge(link)
+        .transition().duration(300)
+        .attr("d", d3.linkHorizontal()
+          .x(d => d.y)
+          .y(d => d.x)
+        );
+
+      link.exit().transition().duration(300).remove();
+
+      nodes.forEach(d => {
+        d.x0 = d.x;
+        d.y0 = d.y;
+      });
+    }
+
+    update(root);
+
+    d3.select("#zoom-in").on("click", () => {
+      svg.transition().call(zoomBehavior.scaleBy, 1.2);
+    });
+    d3.select("#zoom-out").on("click", () => {
+      svg.transition().call(zoomBehavior.scaleBy, 0.8);
+    });
+    d3.select("#zoom-reset").on("click", () => {
+      svg.transition().call(zoomBehavior.transform, d3.zoomIdentity);
+    });
+  });
 }
+
+renderDendrogram();
+window.addEventListener("resize", renderDendrogram);
+
 
 // Bottom-right
 function buildTaxonomyCard() {
@@ -648,35 +328,9 @@ function buildTaxonomyCard() {
   });
 }
  
+ 
+ 
 
-document.querySelectorAll('#tabs_top_right .tab-button').forEach(button => {
-  button.addEventListener('click', function() {
-    console.log("Top right tab clicked — rebuilding Plot Card 2");
-    buildPlotCard1();
-  });
-});
-
-// === Resize active plot on tab switch ===
-const observer = new MutationObserver(() => {
-  document.querySelectorAll('.tab-content.active div[id^="plot"]').forEach(plot => {
-    Plotly.Plots.resize(plot);
-  });
-});
-document.querySelectorAll('.tab-content').forEach(tab => {
-  observer.observe(tab, { attributes: true, attributeFilter: ['class'] });
-});
-
-// main entrypoint
-document.addEventListener("DOMContentLoaded", async function() {
-  await buildDropdownsCard1();
-
-  // These two should go into buildDropdownsCard1
-  document.getElementById('categoryDropdown').addEventListener('change', buildPlotCard1);
-  document.getElementById('filterDropdown').addEventListener('change', buildPlotCard1);
-  document.getElementById('graphDropdown').addEventListener('change', buildPlotCard1);
-
-  buildPlotCard1();
-  buildPlotCard3();
-  buildTaxonomyCard();
-});
+// main entrypoint 
+buildTaxonomyCard(); 
 

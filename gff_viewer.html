@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>JBrowse Linear Genome View</title>
+
+    <script
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@3.5.0/dist/react-linear-genome-view.umd.production.min.js"
+      crossorigin
+    ></script>
+  </head>
+
+  <body>
+    <div id="jbrowse_linear_genome_view"></div>
+
+    <script>
+      const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
+
+      const state = new createViewState({
+        assembly: {
+          name: 'hg38',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'GRCh38-ReferenceSequenceTrack',
+            adapter: {
+              type: 'BgzipFastaAdapter',
+              uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+            },
+          },
+          refNameAliases: {
+            adapter: {
+              type: 'RefNameAliasAdapter',
+              uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+            },
+          },
+          cytobands: {
+            adapter: {
+              type: 'CytobandAdapter',
+              uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
+            },
+          },
+        },
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'ncbi_genes',
+            name: 'NCBI RefSeq Genes',
+            assemblyNames: ['hg38'],
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+            },
+          },
+        ],
+        defaultSession: {
+          name: 'My session',
+          view: {
+            id: 'linearGenomeView',
+            type: 'LinearGenomeView',
+            init: {
+              assembly: 'hg38',
+              loc: '10:29,838,565..29,838,850',
+              tracks: ['ncbi_genes'],
+            },
+          },
+        },
+      })
+
+      const root = createRoot(
+        document.getElementById('jbrowse_linear_genome_view'),
+      )
+      root.render(
+        React.createElement(JBrowseLinearGenomeView, {
+          viewState: state,
+        }),
+      )
+    </script>
+  </body>
+</html>

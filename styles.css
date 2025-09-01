@@ -91,11 +91,25 @@ html, body {
 .card-grid {
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr); 
   gap: 20px;
   padding: 20px;
   height: 90%;
+}
+.card_long {
+  grid-area: 1 / 1 / 2 / 3; 
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #111827;
+  height: 100%;
+  overflow: hidden;
 }
 .card {
   background-color: white;
