@@ -195,7 +195,7 @@ function renderPlotCard1(acpCSVPath) {
       document.getElementById('plot1').on('plotly_click', function(eventData) {
         const clickedRow = pointData[eventData.points[0].pointIndex];
         const idReplicon = clickedRow.ID;
-        const id = idReplicon.replace(clickedRow.Replicons_type + "_", "");
+        const id = clickedRow.name;
         const { tabLeftValue, tabRightValue } = getCurrentSelections();
         const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_ratio_cod_vs_non_6mer.csv`;
 
@@ -206,176 +206,16 @@ function renderPlotCard1(acpCSVPath) {
   });
 }
 
-function renderPlotCard1_max(acpCSVPath) {
-  Papa.parse(acpCSVPath, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const xValues = [];
-      const yValues = [];
-      const zValues = [];
-      const pointData = [];
-
-      const colorScale = [
-        [0.0, "blue"],
-        [0.333, "white"],
-        [0.666, "red"],
-        [1.0, "black"]
-      ]; 
-
-      results.data.forEach(row => {
-        xValues.push(parseFloat(row.size));
-        yValues.push(parseFloat(row.gap));
-        const z = parseFloat(row.z);
-        const logZ = Math.log10(z > 0 ? z : 1e-6); // avoid log(0) or negative values
-
-        zValues.push(logZ);
-        pointData.push(row);
-      });  
-
-            
-      const hoverLabels = pointData.map(row =>
-        `size: ${row.size}<br>gap: ${row.gap}<br>value: ${row.z}<br>ID: ${row.ID}`
-      );
-      var trace1 = { 
-        x: xValues, 
-        y: yValues, 
-        mode: 'markers', 
-        name: 'points', 
-        text: hoverLabels,
-        marker: {  
-          size: 20,  
-          cmin: -1,
-          cmax: 2,
-          color: zValues,
-          colorscale: colorScale,
-        }, 
-        type: 'scatter' 
-      }; 
-
-      var trace2 = { 
-        x: xValues, 
-        y: yValues, 
-        name: 'density', 
-        ncontours: 20, 
-        colorscale: "Greys", 
-        showscale: false, 
-        type: 'histogram2dcontour' 
-      };
-
-      var trace3 = {
-
-        x: xValues, 
-        name: 'x density', 
-        marker: {color: 'rgba(4, 92, 48, 1)'}, 
-        yaxis: 'y2', 
-        type: 'histogram' 
-      };
-
-      var trace4 = { 
-        y: yValues, 
-        name: 'y density', 
-        marker: {color: 'rgba(6, 81, 131, 1)'}, 
-        xaxis: 'x2', 
-        type: 'histogram' 
-      };
-
-      var data = [trace2,trace1, trace3, trace4];
-
-      var layout = { 
-        xaxis: { range: [3, 20], title: 'Arm Length' },
-        yaxis: { range: [0, 20], title: 'Gap Length' },
-        showlegend: false, 
-        autosize: true,  
-        margin: {t: 50}, 
-        hovermode: 'closest', 
-        bargap: 0, 
-        xaxis: { 
-          domain: [0, 0.85], 
-          showgrid: false, 
-          zeroline: false 
-        },
-
-        yaxis: { 
-          domain: [0, 0.85], 
-          showgrid: false, 
-          zeroline: false 
-        },
-
-        xaxis2: { 
-          domain: [0.85, 1], 
-          showgrid: false, 
-          zeroline: false 
-        },
-
-        yaxis2: { 
-          domain: [0.85, 1], 
-          showgrid: false, 
-          zeroline: false 
-        }
-
-      };
-
-      Plotly.newPlot('plot1', data, layout);
-      
-
-      // Add click handler to card1 that updates plot3
-      document.getElementById('plot1').on('plotly_click', function(eventData) {
-        const clickedRow = pointData[eventData.points[0].pointIndex];
-        const id = clickedRow.ID;
-        const idReplicon = clickedRow["ID-replicon"];
-        const { tabLeftValue, tabRightValue } = getCurrentSelections();
-        const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
-
-        renderHeatmapFromCSVPathAndId(heatmapPath, idReplicon);
-      });
-    }
-  });
-}
 
 // Top-right
-function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
-  Papa.parse(acpCSVPathPlot2, {
+function renderPlotsCard2(acpCSVPathPlot, plotName, titleText) {
+  console.log(acpCSVPathPlot, plotName, titleText)
+  Papa.parse(acpCSVPathPlot, {
     download: true,
-    complete: function(results) {
-      const matrix = results.data.filter(row => row.length > 0);
-      const z = matrix.slice(1).map(row =>
-        row.slice(1).map(value => parseFloat(value))
-      );
-
-      const colorScale = [
-        [0.0, "blue"],
-        [0.5, "white"],
-        [1.0, "red"]
-      ];
-
-      Plotly.newPlot(plotName, [{
-        z: z,
-        type: 'heatmap',
-        colorscale: colorScale,
-        zmin: -1,
-        zmax: 1,
-        colorbar: {
-          tickvals: [-1, 0, 1],
-          ticktext: [-1, 0, 1],
-        }
-      }], {
-        title: {
-          text: titleText,
-          font: { size: 18 }
-        },
-        xaxis: {
-          title: { text: "Arm Length" }
-        },
-        yaxis: {
-          title: { text: "Gap Length" },
-          tickmode: "linear",
-          dtick: 2
-        },
-        template: "plotly_white",
-        shapes: BORDER_SHAPE
-      });
-    }
+    header: true,
+    complete: function(acpCSVPathPlot) {
+      renderHeatmapFromCSV(acpCSVPathPlot, titleText,plotName);
+    },
   });
 }
 
@@ -407,8 +247,8 @@ function buildPlotCard1() {
     if (graphValue === "max") {
       renderPlotCard1_max(acpCSVPath);
     }
-    const acp1CSVPath = `${rootPath}/PC0_ratio_cod_vs_non_cod_${parameters}.csv`
-    const acp2CSVPath = `${rootPath}/PC1_ratio_cod_vs_non_cod_${parameters}.csv`
+    const acp1CSVPath = `${rootPath}/PC0_ratio_cod_vs_non_${parameters}.csv`
+    const acp2CSVPath = `${rootPath}/PC1_ratio_cod_vs_non_${parameters}.csv`
 
     // Check that path exists and display notFoundError in case of failure!
     function checkAndRender(csvPath, elementId, plotLabel) {
@@ -436,14 +276,14 @@ function renderHeatmapFromCSVPathAndId(heatmapCSVPath, id) {
     download: true,
     header: true,
     complete: function(heatmapResults) {
-      renderHeatmapFromCSV(heatmapResults, id);
+      renderHeatmapFromCSV(heatmapResults, id, "plot3");
     },
   });
 }
 
 // Bottom-left
-function renderHeatmapFromCSV(results, id) {
-  document.getElementById('plot3').innerHTML = ""; 
+function renderHeatmapFromCSV(results, id,plotName) {
+  document.getElementById(plotName).innerHTML = ""; 
     
   const colors = {
     "6-mer": "#023047",
@@ -594,7 +434,7 @@ function renderHeatmapFromCSV(results, id) {
   };
 
   // Plot it
-  Plotly.newPlot('plot3', traces, layout);
+  Plotly.newPlot(plotName, traces, layout);
 }
 
 // get all important variables
@@ -770,8 +610,6 @@ function buildTaxonomyCard() {
       });
   });
 }
-
-
 
 document.querySelectorAll('#tabs_top_left .tab-button').forEach(button => {
   button.addEventListener('click', function() {

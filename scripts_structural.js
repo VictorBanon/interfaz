@@ -194,9 +194,9 @@ function renderPlotCard1(acpCSVPath) {
 
       // Add click handler to card1 that updates plot3
       document.getElementById('plot1').on('plotly_click', function(eventData) {
-        const clickedRow = pointData[eventData.points[0].pointIndex];
+        const clickedRow = pointData[eventData.points[0].pointIndex]; 
         const idReplicon = clickedRow.ID;
-        const id = idReplicon.replace(clickedRow.Replicons_type + "_", "");
+        const id = clickedRow.name;
         const { tabLeftValue, tabRightValue } = getCurrentSelections();
         const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
@@ -309,8 +309,9 @@ function renderPlotCard1Max(acpCSVPath) {
       // Add click handler to card1 that updates plot3
       document.getElementById('plot1').on('plotly_click', function(eventData) {
         const clickedRow = pointData[eventData.points[0].pointIndex];
-        const id = clickedRow.ID;
-        const idReplicon = clickedRow["ID-replicon"];
+        const id = clickedRow.name;
+        const idReplicon = clickedRow.ID;
+
         const { tabLeftValue, tabRightValue } = getCurrentSelections();
         const heatmapPath = `${DATA_DIR}/${id}/analysis/${idReplicon}_${tabRightValue}_${tabLeftValue}.csv`;
 
@@ -347,8 +348,13 @@ function renderPlotsCard2(acpCSVPathPlot2, plotName, titleText) {
 
   Papa.parse(acpCSVPathPlot2, {
     download: true,
-    complete: function(results) {
-      const matrix = results.data.filter(row => row.length > 1);
+    complete: function(results) { 
+      const result = results.data.filter(row => row.length > 1);
+    
+      // Transpose (swap rows <-> columns)
+      const matrix = result[0].map((_, colIndex) =>
+        result.map(row => row[colIndex])
+      ); 
       const x = matrix[0].slice(1);
       const y = matrix.slice(1).map(row => row[0]);
       const z = matrix.slice(1).map(row =>
@@ -447,7 +453,12 @@ function renderHeatmapFromCSV(heatmapResults, id) {
   // Clear the plot (to get rid of the default on click)
   document.getElementById('plot3').innerHTML = "";
 
-  const matrix = heatmapResults.data.filter(row => row.length > 1);
+  const result = heatmapResults.data.filter(row => row.length > 1);
+
+  // Transpose (swap rows <-> columns)
+  const matrix = result[0].map((_, colIndex) =>
+    result.map(row => row[colIndex])
+  ); 
   const x = matrix[0].slice(1);
   const y = matrix.slice(1).map(row => row[0]);
   const zLog = matrix.slice(1).map(row =>
